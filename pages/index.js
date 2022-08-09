@@ -358,6 +358,7 @@ export default function Plot({ dbData,todaysMissions, origin }) {
           </table>
         </div>
       </div>
+        <div className="text-center text-white font-bold fixed left-4 bottom-4">Made by DragonSoup9812</div>
     </div>
   );
 }
