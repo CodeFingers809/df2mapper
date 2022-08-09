@@ -238,7 +238,7 @@ export default function Plot({ dbData,todaysMissions, origin }) {
             );
           })}
         </div>
-        <div className='mapDiv relative sm:w-[480px] md:w-[738px] bg-[url("../public/map_background.png")] aspect-[5/3] bg-no-repeat bg-cover bg-center mr-4'></div>
+        <div className='mapDiv relative sm:w-[480px] md:w-[738px] bg-[url("/map_background.png")] aspect-[5/3] bg-no-repeat bg-cover bg-center mr-4'></div>
       </div>
       <div className="w-full">
         <div className="relative">
