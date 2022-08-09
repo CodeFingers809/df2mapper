@@ -171,7 +171,7 @@ export default function Plot({ dbData,todaysMissions, origin }) {
     
     filteredArr.forEach((mission, i) => {
       const foundDoc = dbData.find((o) =>
-        o.bldgs.includes(mission["Mission Building"]) && o.city===(mission["Mission City"])
+        o.bldgs.includes(mission["Mission Building"].trim()) && o.city===(mission["Mission City"].trim())
       );
       if (foundDoc !== undefined) {
         // document.querySelector(`td[data-cell-id="12/1"]`).classList.add("bg-emerald-500/30")
