@@ -3,15 +3,79 @@ import axios from "axios";
 import redBoxCoords from "../public/redBoxCoords.json";
 import greenBoxCoords from "../public/greenBoxCoords.json";
 import absoluteUrl from "next-absolute-url";
-// import todaysMissions from "../public/todaysMissions.json";
 
-// TODO: add database for todaysMissions
-
-export default function Plot({ dbData,todaysMissions, origin }) {
-  // console.log(dbData,dbData.find(o=>(o.bldgs.includes("Joseph Residence"))).x)
+export default function Plot({ dbData,df2haven,df2profiler, origin }) {
   //loaded state
   const [loaded, setLoaded] = useState(false);
+  const [todaysMissions,setTodaysMissions] =useState([])
   
+  function parseHaven() {
+    const parser = new DOMParser();
+    const havenDoc = parser.parseFromString(df2haven, "text/html");
+    const profilerDoc = parser.parseFromString(df2profiler, "text/html");
+    const listOfTexts = [...havenDoc.querySelectorAll("tbody > tr > td")].map(
+      (td) => {
+        return td.innerText;
+      }
+    );
+    let listOfObj = [];
+    for (let i = 0; i < listOfTexts.length / 15 - 1; i++) {
+      const misObj = {
+        "Mission Building": listOfTexts[i * 15 + 2],
+        "Mission City": listOfTexts[i * 15 + 3],
+        "Mission Type": listOfTexts[i * 15 + 4],
+        Details: listOfTexts[i * 15 + 5],
+      };
+      listOfObj.push(misObj);
+    }
+    [...profilerDoc.querySelectorAll("#missions > div")]
+      .filter((o) => {
+        return (
+          o.innerHTML.includes("Human Remains") ||
+          o.innerHTML.includes("3 Boss") ||
+          o.innerHTML.includes("Escape Stalker")
+        );
+      })
+      .forEach((o) => {
+        if (o.innerHTML.includes("Human Remains")) {
+          const obj = {
+            "Mission Type": "Human Remains",
+            "Mission City": o.getAttribute("data-place").split(", ")[1],
+            "Mission Building": o.getAttribute("data-place").split(", ")[0],
+          };
+          listOfObj.push(obj);
+        } else if (o.innerHTML.includes("3 Boss")) {
+          const obj = {
+            "Mission Type": "Kill Boss",
+            "Mission City": o.innerHTML
+              .split("(")[1]
+              .split(")")[0]
+              .split(",")[1],
+            "Mission Building": o.innerHTML
+            .split("(")[1]
+            .split(")")[0]
+            .split(",")[0],
+          };
+          listOfObj.push(obj);
+        }else if (o.innerHTML.includes("Escape Stalker")) {
+          const obj = {
+            "Mission Type": "Escape Stalker",
+            "Mission City": o.innerHTML
+              .split("(")[1]
+              .split(")")[0]
+              .split(",")[1],
+            "Mission Building": o.innerHTML
+            .split("(")[1]
+            .split(")")[0]
+            .split(",")[0],
+          };
+          listOfObj.push(obj);
+        }
+      });
+    setFilteredArr(listOfObj)
+    setTodaysMissions(listOfObj)
+  }
+  useEffect(parseHaven, []);
 
   //mission filter
   const [filter, setFilter] = useState({
@@ -27,7 +91,7 @@ export default function Plot({ dbData,todaysMissions, origin }) {
 
   //filtered missions arr
   const [filteredArr, setFilteredArr] = useState(
-    todaysMissions.filter((o) => o["Mission Type"] !== 0)
+    todaysMissions
   );
 
   //mount the table cells on load
@@ -74,10 +138,6 @@ export default function Plot({ dbData,todaysMissions, origin }) {
             (o) => o.x === currentCoords.x && o.y === currentCoords.y
           );
           if (isGreenFound) {
-            // const greenBox = document.createElement("div");
-            // greenBox.classList.add("bg-green-600/70", "h-full", "w-full");
-            // tableCol.appendChild(greenBox);
-            // tableCol.innerHTML="<div className='bg-green-600/70 h-full w-full'></div>"
             tableCol.classList.add("bg-[rgba(255,255,0,25%)]");
           }
           //gen red boxes
@@ -85,9 +145,6 @@ export default function Plot({ dbData,todaysMissions, origin }) {
             (o) => o.x === currentCoords.x && o.y === currentCoords.y
           );
           if (isRedFound) {
-            // const greenBox = document.createElement("div");
-            // greenBox.classList.add("bg-red-600/70", "h-full", "w-full");
-            // tableCol.appendChild(greenBox);
             tableCol.classList.add("bg-red-600/50");
           }
           //making popup
@@ -118,7 +175,6 @@ export default function Plot({ dbData,todaysMissions, origin }) {
           tableRow.appendChild(tableCol);
         }
 
-        // document.querySelector(".mapTable").appendChild(tableRow)
         mapTable.appendChild(tableRow);
       }
       if (document.querySelector(".mapDiv").innerHTML !== "")
@@ -128,10 +184,6 @@ export default function Plot({ dbData,todaysMissions, origin }) {
       setLoaded(!loaded);
     }
   }, [loaded]);
-  //update filtered arr
-  // useEffect(() => {
-  //   console.log(filteredArr);
-  // }, [filteredArr]);
 
   const handleCellHover = (ele) => {
     ele.target.style = "box-shadow:inset 0 0 0 3px rgb(107 114 128)";
@@ -358,7 +410,7 @@ export default function Plot({ dbData,todaysMissions, origin }) {
           </table>
         </div>
       </div>
-        <div className="text-center text-white font-bold fixed left-4 bottom-4">Made by DragonSoup9812</div>
+        <div className="text-center text-white text-xs font-semibold fixed left-4 bottom-4">Made with &#10084;&#65039; by DragonSoup9812</div>
     </div>
   );
 }
@@ -367,11 +419,19 @@ export async function getServerSideProps({ req }) {
   try {
     const { origin } = absoluteUrl(req);
     const res = await axios.get(`${origin}/api/create`);
-    const mis = await axios.get(`${origin}/api/missions`);
+    const df2haven = await axios({
+      method: "GET",
+      url: "https://www.df2haven.com/missions/",
+    });
+    const df2profiler = await axios({
+      method: "GET",
+      url: "https://df2profiler.com/gamemap/",
+    });
     return {
       props: {
         dbData: res.data,
-        todaysMissions:mis.data,
+        df2haven: df2haven.data,
+        df2profiler: df2profiler.data,
         origin,
       },
     };
