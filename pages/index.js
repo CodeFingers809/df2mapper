@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
 import axios from "axios";
 import redBoxCoords from "../public/redBoxCoords.json";
@@ -42,6 +43,7 @@ export default function Plot({ dbData,df2haven,df2profiler, origin }) {
             "Mission Type": "Human Remains",
             "Mission City": o.getAttribute("data-place").split(", ")[1],
             "Mission Building": o.getAttribute("data-place").split(", ")[0],
+            Details:"Obtain human remains"
           };
           listOfObj.push(obj);
         } else if (o.innerHTML.includes("3 Boss")) {
@@ -55,6 +57,7 @@ export default function Plot({ dbData,df2haven,df2profiler, origin }) {
             .split("(")[1]
             .split(")")[0]
             .split(",")[0],
+            Details:"Kill 3 boss"
           };
           listOfObj.push(obj);
         }else if (o.innerHTML.includes("Escape Stalker")) {
@@ -68,6 +71,7 @@ export default function Plot({ dbData,df2haven,df2profiler, origin }) {
             .split("(")[1]
             .split(")")[0]
             .split(",")[0],
+            Details:"Escape 1 Stalker"
           };
           listOfObj.push(obj);
         }
@@ -410,7 +414,7 @@ export default function Plot({ dbData,df2haven,df2profiler, origin }) {
           </table>
         </div>
       </div>
-        <div className="text-center text-white text-xs font-semibold fixed left-4 bottom-4">Made with &#10084;&#65039; by DragonSoup9812</div>
+        <div className="text-center text-white text-xs font-semibold fixed left-4 bottom-4">All data to this website gets sourced from df2profiler.com and df2haven.com<br />Without these, this website wouldn&apos;t work<br/>Made with &#10084;&#65039; by DragonSoup9812</div>
     </div>
   );
 }
