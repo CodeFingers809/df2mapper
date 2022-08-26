@@ -5,7 +5,7 @@ import Script from "next/script";
 
 function MyApp({ Component, pageProps }) {
   return (
-    <div className="bg-gray-900">
+    <div className="bg-zinc-900">
       <Script
         strategy="lazyOnload"
         src={`https://www.googletagmanager.com/gtag/js?id=${process.env.GOOGLE_ANALYTICS}`}

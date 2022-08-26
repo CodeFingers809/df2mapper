@@ -9,6 +9,7 @@ export default function Plot({ dbData,df2haven,df2profiler, origin }) {
   //loaded state
   const [loaded, setLoaded] = useState(false);
   const [todaysMissions,setTodaysMissions] =useState([])
+  const [locations,setLocations] = useState([])
   
   function parseHaven() {
     const parser = new DOMParser();
@@ -20,6 +21,7 @@ export default function Plot({ dbData,df2haven,df2profiler, origin }) {
       }
     );
     let listOfObj = [];
+    let tempLocs = []
     for (let i = 0; i < listOfTexts.length / 15 - 1; i++) {
       const misObj = {
         "Mission Building": listOfTexts[i * 15 + 2],
@@ -29,53 +31,43 @@ export default function Plot({ dbData,df2haven,df2profiler, origin }) {
       };
       listOfObj.push(misObj);
     }
-    [...profilerDoc.querySelectorAll("#missions > div")]
-      .filter((o) => {
-        return (
-          o.innerHTML.includes("Human Remains") ||
-          o.innerHTML.includes("3 Boss") ||
-          o.innerHTML.includes("Escape Stalker")
-        );
-      })
+    console.log(df2profiler);
+    [...profilerDoc.querySelectorAll("#missions > span")].filter((e)=>{return !e.innerHTML.includes("(Outpost Leader)")})
       .forEach((o) => {
-        if (o.innerHTML.includes("Human Remains")) {
-          const obj = {
-            "Mission Type": "Human Remains",
-            "Mission City": o.getAttribute("data-place").split(", ")[1],
-            "Mission Building": o.getAttribute("data-place").split(", ")[0],
-            Details:"Obtain human remains"
+          let obj = {
+            "Mission Type": o.querySelector("strong").innerText,
+            Details:"-"
           };
-          listOfObj.push(obj);
-        } else if (o.innerHTML.includes("3 Boss")) {
-          const obj = {
-            "Mission Type": "Kill Boss",
-            "Mission City": o.innerHTML
-              .split("(")[1]
-              .split(")")[0]
-              .split(",")[1],
-            "Mission Building": o.innerHTML
+          if(obj["Mission Type"]==="Find Item" && o.innerHTML.includes("Human Remains")){
+            obj["Mission Type"]="Human Remains"
+          }
+          if(o.getAttribute("data-place").trim()==="Open World"){
+            obj["Mission Building"]=o.innerHTML
             .split("(")[1]
             .split(")")[0]
-            .split(",")[0],
-            Details:"Kill 3 boss"
-          };
-          listOfObj.push(obj);
-        }else if (o.innerHTML.includes("Escape Stalker")) {
-          const obj = {
-            "Mission Type": "Escape Stalker",
-            "Mission City": o.innerHTML
-              .split("(")[1]
-              .split(")")[0]
-              .split(",")[1],
-            "Mission Building": o.innerHTML
-            .split("(")[1]
+            .split(",")[0].trim()
+            obj["Mission City"]=o.innerHTML.split("(")[1]
             .split(")")[0]
-            .split(",")[0],
-            Details:"Escape 1 Stalker"
-          };
+            .split(",")[1].trim()
+          }else{
+            obj["Mission Building"]=o.getAttribute("data-place").split(", ")[0]
+            obj["Mission City"]=o.getAttribute("data-place").split(", ")[1]
+          }
           listOfObj.push(obj);
-        }
+        
       });
+      
+  //   [...parser.parseFromString(``,"text/html").querySelectorAll("#map > tbody > tr > td")].forEach((td,i)=>{
+  //     const tempObj = {
+  //       x:td.getAttribute("data-xcoord"),
+  //       y:td.getAttribute("data-ycoord"),
+  //       city:td.getAttribute("data-district"),
+  //       level:td.getAttribute("data-level"),
+  //       bldgs:td.getAttribute("data-buildings")===""?[]:td.getAttribute("data-buildings").split(","),
+  //     }
+  //     tempLocs.push(tempObj)
+  //   })
+  //   console.log(JSON.stringify(tempLocs))
     setFilteredArr(listOfObj)
     setTodaysMissions(listOfObj)
   }
@@ -294,7 +286,7 @@ export default function Plot({ dbData,df2haven,df2profiler, origin }) {
             );
           })}
         </div>
-        <div className='mapDiv relative sm:w-[480px] md:w-[738px] bg-[url("/map_background.png")] aspect-[5/3] bg-no-repeat bg-cover bg-center mr-4'></div>
+        <div className='mapDiv relative sm:w-[480px] md:w-[738px] bg-[url("https://df2profiler.com/gamemap/map_background.png")] aspect-[5/3] bg-no-repeat bg-cover bg-center mr-4'></div>
       </div>
       <div className="w-full">
         <div className="relative">
@@ -367,7 +359,7 @@ export default function Plot({ dbData,df2haven,df2profiler, origin }) {
           )}
         </div>
         <div className="w-full pl-0 pt-4">
-          <table className="w-full missionTable bg-gray-800 rounded-xl rounded-b-none">
+          <table className="w-full missionTable bg-zinc-800 rounded-xl rounded-b-none">
             <tbody>
               <tr className="text-sm text-gray-300 border-b-2 border-gray-400">
                 <td className="text-center text-sm font-bold">Type</td>
