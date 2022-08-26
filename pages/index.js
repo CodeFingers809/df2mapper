@@ -5,7 +5,7 @@ import redBoxCoords from "../public/redBoxCoords.json";
 import greenBoxCoords from "../public/greenBoxCoords.json";
 import absoluteUrl from "next-absolute-url";
 
-export default function Plot({ dbData,df2haven,df2profiler, origin }) {
+export default function Plot({ dbData,df2profiler, origin }) {
   //loaded state
   const [loaded, setLoaded] = useState(false);
   const [todaysMissions,setTodaysMissions] =useState([])
@@ -13,25 +13,9 @@ export default function Plot({ dbData,df2haven,df2profiler, origin }) {
   
   function parseHaven() {
     const parser = new DOMParser();
-    const havenDoc = parser.parseFromString(df2haven, "text/html");
     const profilerDoc = parser.parseFromString(df2profiler, "text/html");
-    const listOfTexts = [...havenDoc.querySelectorAll("tbody > tr > td")].map(
-      (td) => {
-        return td.innerText;
-      }
-    );
     let listOfObj = [];
-    let tempLocs = []
-    for (let i = 0; i < listOfTexts.length / 15 - 1; i++) {
-      const misObj = {
-        "Mission Building": listOfTexts[i * 15 + 2],
-        "Mission City": listOfTexts[i * 15 + 3],
-        "Mission Type": listOfTexts[i * 15 + 4],
-        Details: listOfTexts[i * 15 + 5],
-      };
-      listOfObj.push(misObj);
-    }
-    console.log(df2profiler);
+    let tempLocs = [];
     [...profilerDoc.querySelectorAll("#missions > span")].filter((e)=>{return !e.innerHTML.includes("(Outpost Leader)")})
       .forEach((o) => {
           let obj = {
@@ -415,10 +399,6 @@ export async function getServerSideProps({ req }) {
   try {
     const { origin } = absoluteUrl(req);
     const res = await axios.get(`${origin}/api/create`);
-    const df2haven = await axios({
-      method: "GET",
-      url: "https://www.df2haven.com/missions/",
-    });
     const df2profiler = await axios({
       method: "GET",
       url: "https://df2profiler.com/gamemap/",
@@ -426,7 +406,6 @@ export async function getServerSideProps({ req }) {
     return {
       props: {
         dbData: res.data,
-        df2haven: df2haven.data,
         df2profiler: df2profiler.data,
         origin,
       },
