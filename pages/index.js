@@ -10,7 +10,6 @@ export default function Plot({ dbData, df2profiler, origin }) {
     const parser = new DOMParser();
     const profilerDoc = parser.parseFromString(df2profiler, "text/html");
     let listOfObj = [];
-    console.log(profilerDoc);
     [...profilerDoc.querySelectorAll("#missions > span")]
       .filter((e) => {
         return !e.innerHTML.includes("(Outpost Leader)");
@@ -98,7 +97,7 @@ export default function Plot({ dbData, df2profiler, origin }) {
 
   return (
     <div className="min-h-screen py-8">
-      <div className="tableDiv ml-8 mt-2 mr-4 flex flex-nowrap items-start">
+      <div className="tableDiv ml-8 mt-2 mr-4 flex flex-wrap justify-center lg:flex-nowrap lg:items-start">
         <table className=' mx-4 mb-4 w-[340px] sm:w-[496px] md:w-[744px] aspect-[5/3] bg-[url("https://df2profiler.com/gamemap/map_background.png")] bg-no-repeat bg-cover table-fixed'>
           <tbody>
             {/* generating rows */}
@@ -226,7 +225,7 @@ export default function Plot({ dbData, df2profiler, origin }) {
             })}
           </tbody>
         </table>
-        <div className=" -mt-5">
+        <div className="lg:-mt-5 flex justify-center flex-wrap">
         <div>
           <div className="relative mb-4">
             <button
@@ -298,16 +297,16 @@ export default function Plot({ dbData, df2profiler, origin }) {
             )}
           </div>
         </div>
-        <table  className="rounded-t-xl">
-          <thead  className="rounded-t-xl">
+        <table>
+          <thead>
             <tr className="text-white bg-zinc-700 border-b-2 border-zinc-500">
-              <th>Done</th>
+              <th className="rounded-tl-xl">Done</th>
               <th>Type</th>
               <th>Building</th>
               <th>City</th>
               <th>(Col,Row)</th>
               <th>Details</th>
-              <th>Guide</th>
+              <th  className="rounded-tr-xl">Guide</th>
             </tr>
           </thead>
           <tbody>
