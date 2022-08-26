@@ -126,7 +126,7 @@ export default function Plot({ dbData, df2profiler, origin }) {
                             ? "border-b-gray-400"
                             : "selection:"
                         }`}
-                        onClick={(e) => handleRouteClick(e)}
+                        
                         style={
                           filteredArr.find(
                             (o) =>
