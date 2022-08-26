@@ -1,61 +1,92 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
 import axios from "axios";
 import redBoxCoords from "../public/redBoxCoords.json";
 import greenBoxCoords from "../public/greenBoxCoords.json";
 import absoluteUrl from "next-absolute-url";
 
-export default function Plot({ dbData,df2profiler, origin }) {
-  //loaded state
-  const [loaded, setLoaded] = useState(false);
-  const [todaysMissions,setTodaysMissions] =useState([])
-  const [locations,setLocations] = useState([])
-  
-  function parseHaven() {
+export default function Plot({ dbData, df2profiler, origin }) {
+  const [todaysMissions, setTodaysMissions] = useState([]);
+
+  const [routeArr, setRouteArr] = useState([]);
+  const [drawRoute, setDrawRoute] = useState(true);
+  const [routeLines, setRouteLines] = useState([]);
+
+  const getOffset = (el) => {
+    const rect = el.getBoundingClientRect();
+    return {
+      left: rect.left + window.pageXOffset,
+      top: rect.top + window.pageYOffset,
+      width: rect.width || el.offsetWidth,
+      height: rect.height || el.offsetHeight,
+    };
+  };
+
+  const connectLine = (div1, div2, color, thickness) => {
+    const off1 = getOffset(div1);
+    const off2 = getOffset(div2);
+
+    const x1 = off1.left + off1.width / 2;
+    const y1 = off1.top + off1.height / 2;
+
+    const x2 = off2.left + off2.width / 2;
+    const y2 = off2.top + off2.height / 2;
+
+    const length = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+
+    const cx = (x1 + x2) / 2 - length / 2;
+    const cy = (y1 + y2) / 2 - thickness / 2;
+
+    const angle = Math.atan2(y1 - y2, x1 - x2) * (180 / Math.PI);
+    return {
+      left: cx,
+      top: cy,
+      length,
+      angle,
+    };
+  };
+  useEffect(() => {
     const parser = new DOMParser();
     const profilerDoc = parser.parseFromString(df2profiler, "text/html");
     let listOfObj = [];
-    let tempLocs = [];
-    [...profilerDoc.querySelectorAll("#missions > span")].filter((e)=>{return !e.innerHTML.includes("(Outpost Leader)")})
-      .forEach((o) => {
-          let obj = {
-            "Mission Type": o.querySelector("strong").innerText,
-            Details:"-"
-          };
-          if(obj["Mission Type"]==="Find Item" && o.innerHTML.includes("Human Remains")){
-            obj["Mission Type"]="Human Remains"
-          }
-          if(o.getAttribute("data-place").trim()==="Open World"){
-            obj["Mission Building"]=o.innerHTML
+    [...profilerDoc.querySelectorAll("#missions > span")]
+      .filter((e) => {
+        return !e.innerHTML.includes("(Outpost Leader)");
+      })
+      .forEach((o, index) => {
+        let obj = {
+          "Mission Type": o.querySelector("strong").innerText,
+          Details: "-",
+          complete: false,
+          ID:index+1,
+          guide:"Add Guide"
+        };
+        if (
+          obj["Mission Type"] === "Find Item" &&
+          o.innerHTML.includes("Human Remains")
+        ) {
+          obj["Mission Type"] = "Human Remains";
+        }
+        if (o.getAttribute("data-place").trim() === "Open World") {
+          obj["Mission Building"] = o.innerHTML
             .split("(")[1]
             .split(")")[0]
-            .split(",")[0].trim()
-            obj["Mission City"]=o.innerHTML.split("(")[1]
+            .split(",")[0]
+            .trim();
+          obj["Mission City"] = o.innerHTML
+            .split("(")[1]
             .split(")")[0]
-            .split(",")[1].trim()
-          }else{
-            obj["Mission Building"]=o.getAttribute("data-place").split(", ")[0]
-            obj["Mission City"]=o.getAttribute("data-place").split(", ")[1]
-          }
-          listOfObj.push(obj);
+            .split(",")[1]
+            .trim();
+        } else {
+          obj["Mission Building"] = o.getAttribute("data-place").split(", ")[0];
+          obj["Mission City"] = o.getAttribute("data-place").split(", ")[1];
+        }
         
+        listOfObj.push(obj);
       });
-      
-  //   [...parser.parseFromString(``,"text/html").querySelectorAll("#map > tbody > tr > td")].forEach((td,i)=>{
-  //     const tempObj = {
-  //       x:td.getAttribute("data-xcoord"),
-  //       y:td.getAttribute("data-ycoord"),
-  //       city:td.getAttribute("data-district"),
-  //       level:td.getAttribute("data-level"),
-  //       bldgs:td.getAttribute("data-buildings")===""?[]:td.getAttribute("data-buildings").split(","),
-  //     }
-  //     tempLocs.push(tempObj)
-  //   })
-  //   console.log(JSON.stringify(tempLocs))
-    setFilteredArr(listOfObj)
-    setTodaysMissions(listOfObj)
-  }
-  useEffect(parseHaven, []);
+    setFilteredArr(listOfObj);
+    setTodaysMissions(listOfObj);
+  }, []);
 
   //mission filter
   const [filter, setFilter] = useState({
@@ -66,111 +97,11 @@ export default function Plot({ dbData,df2profiler, origin }) {
     "Blood Samples": false,
     "Escape Stalker": false,
     "Kill Boss": false,
-    "Human Remains":false,
+    "Human Remains": false,
   });
 
   //filtered missions arr
-  const [filteredArr, setFilteredArr] = useState(
-    todaysMissions
-  );
-
-  //mount the table cells on load
-  useEffect(() => {
-    if (!loaded) {
-      const rows = 18;
-      const cols = 30;
-      const mapTable = document.createElement("table");
-      mapTable.classList.add("mapTable", "w-full", "h-full");
-      //generating rows
-      for (let i = 0; i < rows; i++) {
-        const tableRow = document.createElement("tr");
-        tableRow.classList.add("row" + (i + 1), "mapRow");
-        //generating cols
-        for (let j = 0; j < cols; j++) {
-          const tableCol = document.createElement("td");
-          tableCol.classList.add(
-            "cell" + (j + 1) + "/" + (i + 1),
-            "cell",
-            "border",
-            "border-gray-700",
-            "box-border",
-            "p-0",
-            "group",
-            "relative"
-          );
-          tableCol.setAttribute("data-cell-id", j + 1 + "/" + (i + 1));
-
-          //event listeners for cols
-          tableCol.addEventListener("mouseenter", handleCellHover);
-          tableCol.addEventListener("mouseleave", removeCellHover);
-
-          //change borders to make the bigger grid lines
-          if ((j + 1) % 6 === 0 && j + 1 !== 30) {
-            tableCol.classList.add("border-r-gray-100");
-          }
-          if ((i + 1) % 6 === 0 && i + 1 !== 18) {
-            tableCol.classList.add("border-b-gray-100");
-          }
-
-          //gen green boxes
-          const currentCoords = { x: j + 1, y: i + 1 };
-          const isGreenFound = greenBoxCoords.find(
-            (o) => o.x === currentCoords.x && o.y === currentCoords.y
-          );
-          if (isGreenFound) {
-            tableCol.classList.add("bg-[rgba(255,255,0,25%)]");
-          }
-          //gen red boxes
-          const isRedFound = redBoxCoords.find(
-            (o) => o.x === currentCoords.x && o.y === currentCoords.y
-          );
-          if (isRedFound) {
-            tableCol.classList.add("bg-red-600/50");
-          }
-          //making popup
-          const cellData = dbData.find((o) => o.x === j + 1 && o.y === i + 1);
-          var hue = ((1 - cellData.level * 0.02) * 120).toString(10);
-          tableCol.innerHTML += `<div class="popup${
-            j + 1 + "/" + (i + 1)
-          } tooltip-text bg-black/60 backdrop-blur-sm text-zinc-300 pointer-events-none rounded hidden group-hover:block absolute left-10 top-0 text-center py-2 px-4 z-50 whitespace-nowrap font-staatliches">
-          ${isRedFound ? '<p class="text-sm text-red-600">PvP Zone</p>' : ""}
-          <p class="text-md cityName">${
-            cellData.city
-          }</p><p class="text-xs" style="color:${[
-            "hsl(",
-            hue,
-            ",100%,50%)",
-          ].join("")}">Level&nbsp;&nbsp;${
-            cellData.level
-          }</p><p class="bldgNames leading-3" data-tooltip-text-id="${
-            j + 1 + "/" + (i + 1)
-          }"></p></div>`;
-          if (cellData.bldgs.length !== 0) {
-            cellData.bldgs.forEach((bldg) => {
-              tableCol.querySelector(
-                ".bldgNames"
-              ).innerHTML += `<span class="bldgName text-xs text-zinc-400">${bldg}</span><br />`;
-            });
-          }
-          tableRow.appendChild(tableCol);
-        }
-
-        mapTable.appendChild(tableRow);
-      }
-      if (document.querySelector(".mapDiv").innerHTML !== "")
-        document.querySelector(".mapDiv").innerHTML = "";
-      document.querySelector(".mapDiv").appendChild(mapTable);
-
-      setLoaded(!loaded);
-    }
-  }, [loaded]);
-
-  const handleCellHover = (ele) => {
-    ele.target.style = "box-shadow:inset 0 0 0 3px rgb(107 114 128)";
-  };
-  const removeCellHover = (ele) => {
-    ele.target.style = "box-shadow:none";
-  };
+  const [filteredArr, setFilteredArr] = useState(todaysMissions);
   //dropdown state
   const [showdropdown, setShowdropdown] = useState(false);
   //options
@@ -184,47 +115,7 @@ export default function Plot({ dbData,df2profiler, origin }) {
     "Kill Boss",
     "Human Remains",
   ];
-
-  useEffect(() => {
-    const allBldgNames = Array.from(
-      document.getElementsByClassName("text-green-500")
-    );
-    for (let i = 0; i < allBldgNames.length; i++) {
-      const oneBldgName = allBldgNames[i];
-      oneBldgName.classList.remove("text-green-500");
-    }
-    const greenCells = Array.from(
-      document.getElementsByClassName("bg-emerald-500/30")
-    );
-    for (let i = 0; i < greenCells.length; i++) {
-      const cell = greenCells[i];
-      cell.classList.remove("bg-emerald-500/30");
-    }
-    
-    filteredArr.forEach((mission, i) => {
-      const foundDoc = dbData.find((o) =>
-        o.bldgs.includes(mission["Mission Building"].trim()) && o.city===(mission["Mission City"].trim())
-      );
-      if (foundDoc !== undefined) {
-        // document.querySelector(`td[data-cell-id="12/1"]`).classList.add("bg-emerald-500/30")
-        document
-          .querySelector(`td[data-cell-id="${foundDoc.x}/${foundDoc.y}"]`)
-          .classList.add("bg-emerald-500/30");
-        //bldgName to green
-        const bldgNames = Array.from(
-          document
-            .querySelector(`td[data-cell-id="${foundDoc.x}/${foundDoc.y}"]`)
-            .getElementsByClassName("bldgName")
-        );
-        bldgNames.forEach((name) => {
-          if (name.innerText === mission["Mission Building"]) {
-            // console.log("sd")
-            name.classList.add("text-green-500");
-          }
-        });
-      }
-    });
-  }, [filteredArr]);
+  //changing the filter
   const handleChangeFilter = (e) => {
     const changedFilter = filter;
     changedFilter[e.target.getAttribute("data-filter-name")] = e.target.checked;
@@ -232,165 +123,325 @@ export default function Plot({ dbData,df2profiler, origin }) {
     const filters = Object.keys(filter).filter((o) => filter[o]);
     setFilteredArr((c) => {
       if (filters.length === 0 || filters.length === 7) {
-        return todaysMissions.filter((o, i) => o["Mission Type"] !== 0);
+        return todaysMissions;
       }
-      return todaysMissions.filter(
-        (o, i) => filters.includes(o["Mission Type"]) && o["Mission Type"] !== 0
+      return todaysMissions.filter((o, i) =>
+        filters.includes(o["Mission Type"])
       );
     });
   };
+  //setting complete missions
+  const handleComplete = (e, id) => {
+    let temp = [...todaysMissions];
+    temp[id - 1].complete = !temp[id - 1].complete;
+    setTodaysMissions(temp);
+    const filters = Object.keys(filter).filter((o) => filter[o]);
+    setFilteredArr((c) => {
+      if (filters.length === 0 || filters.length === 7) {
+        return temp;
+      }
+      return temp.filter((o, i) => filters.includes(o["Mission Type"]));
+    });
+  };
+  //drawing route lines
+  const handleRouteClick = (e) => {
+    console.log(e.target.id);
+    if (routeArr.includes(e.target.id)) return;
+    setRouteArr((c) => [...c, e.target.id]);
+  };
+  useEffect(() => {
+    if (routeArr.length < 2) return;
+    [...document.querySelectorAll(".routeLine")].forEach((ele) => {
+      ele.parentElement.removeChild(ele);
+    });
+    for (let i = 0; i < routeArr.length - 1; i++) {
+      const d1 = document.getElementById(routeArr[i]);
+      const d2 = document.getElementById(routeArr[i + 1]);
+
+      setRouteLines([...routeLines, connectLine(d1, d2, "white", 2)]);
+    }
+    console.log(routeLines);
+  }, [routeArr]);
 
   return (
-    <div className="min-h-screen min-w-screen mx-auto p-6 flex flex-nowrap items-start">
-      <div className="relative ml-4 mt-4">
-        <div className="rowNums absolute w-5 h-full left-0 top-0 bg-gray-800 -translate-x-full text-end flex flex-col justify-between text-[12px]">
-          {[...Array(18).keys()].map((num) => {
-            return (
-              <p
-                key={num + 1}
-                className="h-8 text-gray-400 flex items-center justify-center border border-gray-400 border-r-0"
-              >
-                {num + 1}
-              </p>
-            );
-          })}
-        </div>
-        <div
-          className="colNums absolute h-5 left-0 top-0 bg-gray-800 -translate-y-full flex flex-row justify-evenly text-[12px]"
-          style={{ width: "calc(100% - 16px)" }}
-        >
-          {[...Array(30).keys()].map((num) => {
-            return (
-              <p
-                key={num + 1}
-                className="w-8 text-gray-400 text-center border border-gray-400 border-b-0"
-              >
-                {num + 1}
-              </p>
-            );
-          })}
-        </div>
-        <div className='mapDiv relative sm:w-[480px] md:w-[738px] bg-[url("https://df2profiler.com/gamemap/map_background.png")] aspect-[5/3] bg-no-repeat bg-cover bg-center mr-4'></div>
-      </div>
-      <div className="w-full">
-        <div className="relative">
-          <button
-            id="dropdownButton"
-            data-dropdown-toggle="dropdownDefaultCheckbox"
-            className="text-white focus:ring-4 focus:outline-nonefont-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800"
-            type="button"
-            onClick={() => setShowdropdown(!showdropdown)}
-          >
-            Mission Types{" "}
-            <svg
-              className="ml-2 w-4 h-4"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              ></path>
-            </svg>
-          </button>
+    <div className="min-h-screen pb-8">
+      <div className="tableDiv pt-8 px-4 flex flex-wrap justify-center">
+        <table className=' mx-4 mb-4 w-[340px] sm:w-[496px] md:w-[744px] aspect-[5/3] bg-[url("https://df2profiler.com/gamemap/map_background.png")] bg-no-repeat bg-cover table-fixed'>
+          <tbody>
+            {/* generating rows */}
+            {[...Array(18).keys()].map((o, i) => {
+              return (
+                <tr key={"row" + i}>
+                  {/* generating cols */}
+                  {[...Array(30).keys()].map((cell, index) => {
+                    const x = index + 1;
+                    const y = i + 1;
+                    const isRed = redBoxCoords.find(
+                      (o) => o.x === x && o.y === y
+                    );
+                    const isGreen = greenBoxCoords.find(
+                      (o) => o.x === x && o.y === y
+                    );
+                    const cellData = dbData.find((o) => o.x === x && o.y === y);
+                    return (
+                      <td
+                        key={"tile" + index}
+                        id={"tile" + x + "/" + y}
+                        className={`border border-gray-700 hover:shadow-[inset_0_0_0_3px_#4b5563] relative group ${
+                          x % 6 === 0 && x !== 30 ? "border-r-gray-400" : ""
+                        } ${
+                          y % 6 === 0 && y !== 18
+                            ? "border-b-gray-400"
+                            : "selection:"
+                        }`}
+                        onClick={(e) => handleRouteClick(e)}
+                        style={
+                          filteredArr.find(
+                            (o) =>
+                              cellData.bldgs.includes(
+                                o["Mission Building"].trim()
+                              ) && o["Mission City"].trim() === cellData.city
+                          )
+                            ? { backgroundColor: "#05966960" }
+                            : {
+                                backgroundColor: isRed
+                                  ? "#dc262670"
+                                  : isGreen
+                                  ? "#ffff0040"
+                                  : "transparent",
+                              }
+                        }
+                      >
+                        {/* adding col nums */}
+                        {x === 1 ? (
+                          <p className="absolute text-zinc-300 text-center -translate-x-full top-0 left-0 border border-gray-300 border-r-0 bg-zinc-700 w-full h-full box-content pointer-events-none sm:text-[10px] md:text-[16px] text-[5px]">
+                            {i + 1}
+                          </p>
+                        ) : (
+                          ""
+                        )}
+                        {/* adding row nums */}
+                        {y === 1 ? (
+                          <p className="absolute text-zinc-300 text-center -translate-y-full top-0 left-0 border border-gray-300 border-b-0 bg-zinc-700 w-full box-content pointer-events-none sm:text-[10px] md:text-[16px] text-[5px]">
+                            {index + 1}
+                          </p>
+                        ) : (
+                          ""
+                        )}
 
-          {showdropdown && (
-            <div
-              id="dropdownMenu"
-              className="z-10 w-48 rounded divide-y  shadow bg-gray-700 divide-gray-600 block"
-              data-popper-reference-hidden=""
-              data-popper-escaped=""
-              data-popper-placement="bottom"
-              style={{
-                position: "absolute",
-                inset: "0px auto auto 0px",
-                margin: "10px 0px",
-                top: "100%",
-              }}
-            >
-              <ul
-                className="p-3 space-y-3 text-sm text-gray-200"
-                aria-labelledby="dropdownCheckboxButton"
-              >
-                {missionTypes.map((missionType, i) => {
-                  return (
-                    <li key={missionType}>
-                      <div className="flex items-center p-2 rounded hover:bg-gray-600">
-                        <input
-                          data-filter-name={missionType}
-                          checked={filter[missionType]}
-                          type="checkbox"
-                          onChange={handleChangeFilter}
-                          className="w-4 h-4 text-blue-600 rounded  focus:ring-blue-600 ring-offset-gray-700 focus:ring-2 bg-gray-600 border-gray-500 outline-none cursor-pointer"
-                        />
-                        <label
-                          htmlFor={missionType}
-                          className="ml-2 w-full text-sm font-medium text-gray-200"
+                        {/* making popup */}
+                        <div
+                          className={`popup${
+                            x + "/" + y
+                          } tooltip-text bg-black/60 backdrop-blur-sm text-zinc-300 pointer-events-none rounded hidden group-hover:block absolute left-10 top-0 text-center py-2 px-4 z-50 whitespace-nowrap font-staatliches`}
                         >
-                          {missionType}
-                        </label>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
-        </div>
-        <div className="w-full pl-0 pt-4">
-          <table className="w-full missionTable bg-zinc-800 rounded-xl rounded-b-none">
-            <tbody>
-              <tr className="text-sm text-gray-300 border-b-2 border-gray-400">
-                <td className="text-center text-sm font-bold">Type</td>
-                <td className="text-center text-sm font-bold">Building</td>
-                <td className="text-center text-sm font-bold">City</td>
-                <td className="text-center text-sm font-bold">(col,row)</td>
-                <td className="text-center text-sm font-bold">Details</td>
-              </tr>
-              {filteredArr.map((mission, i) => {
-                return (
-                  <tr
-                    key={i}
-                    className="text-xs text-gray-300 border-b border-gray-600"
-                  >
-                    <td className="px-3">{mission["Mission Type"]}</td>
-                    <td className="px-3">{mission["Mission Building"]}</td>
-                    <td className="px-3">{mission["Mission City"]}</td>
-                    {dbData.find((o) =>
-                      o.bldgs.includes(mission["Mission Building"])
-                    ) !== undefined ? (
-                      <td className="px-3 text-center">
-                        (
-                        {
-                          dbData.find((o) =>
-                            o.bldgs.includes(mission["Mission Building"])
-                          ).x
-                        }
-                        ,{" "}
-                        {
-                          dbData.find((o) =>
-                            o.bldgs.includes(mission["Mission Building"])
-                          ).y
-                        }
-                        )
+                          {isRed && (
+                            <p className="text-sm text-red-600">PvP Zone</p>
+                          )}
+                          {<p className="text-md cityName">{cellData.city}</p>}
+                          {
+                            <p
+                              className="text-xs"
+                              style={{
+                                color: [
+                                  "hsl(",
+                                  ((1 - cellData.level * 0.02) * 120).toString(
+                                    10
+                                  ),
+                                  ",100%,50%)",
+                                ].join(""),
+                              }}
+                            >
+                              Level&nbsp;&nbsp;{cellData.level}
+                            </p>
+                          }
+                          {
+                            <p
+                              className="bldgNames leading-3"
+                              data-tooltip-text-id={`${x + "/" + y}`}
+                            >
+                              {cellData.bldgs.length !== 0 &&
+                                cellData.bldgs.map((bldg) => {
+                                  return (
+                                    <span
+                                      key={bldg}
+                                      className={`bldgName text-xs text-zinc-400 ${
+                                        filteredArr.find(
+                                          (o) =>
+                                            o["Mission Building"].trim() ===
+                                              bldg &&
+                                            o["Mission City"].trim() ===
+                                              cellData.city
+                                        )
+                                          ? "text-emerald-600"
+                                          : ""
+                                      }`}
+                                    >
+                                      {bldg}
+                                      <br />
+                                    </span>
+                                  );
+                                })}
+                            </p>
+                          }
+                        </div>
                       </td>
-                    ) : (
-                      <td className="text-center">-</td>
-                    )}
-                    <td className="px-3">{mission["Details"]}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <div>
+          <div className="relative">
+            <button
+              id="dropdownButton"
+              data-dropdown-toggle="dropdownDefaultCheckbox"
+              className="text-white focus:ring-4 focus:outline-nonefont-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800"
+              type="button"
+              onClick={() => setShowdropdown(!showdropdown)}
+            >
+              Mission Types{" "}
+              <svg
+                className="ml-2 w-4 h-4"
+                aria-hidden="true"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 9l-7 7-7-7"
+                ></path>
+              </svg>
+            </button>
+
+            {showdropdown && (
+              <div
+                id="dropdownMenu"
+                className="z-10 w-48 rounded divide-y shadow bg-gray-700 divide-gray-600 block"
+                data-popper-reference-hidden=""
+                data-popper-escaped=""
+                data-popper-placement="bottom"
+                style={{
+                  position: "absolute",
+                  inset: "0px auto auto 0px",
+                  margin: "10px 0px",
+                  top: "100%",
+                }}
+              >
+                <ul
+                  className="p-3 space-y-3 text-sm text-gray-200"
+                  aria-labelledby="dropdownCheckboxButton"
+                >
+                  {missionTypes.map((missionType, i) => {
+                    return (
+                      <li key={missionType}>
+                        <div className="flex items-center p-2 rounded hover:bg-gray-600">
+                          <input
+                            data-filter-name={missionType}
+                            checked={filter[missionType]}
+                            type="checkbox"
+                            onChange={handleChangeFilter}
+                            className="w-4 h-4 text-blue-600 rounded  focus:ring-blue-600 ring-offset-gray-700 focus:ring-2 bg-gray-600 border-gray-500 outline-none cursor-pointer"
+                          />
+                          <label
+                            htmlFor={missionType}
+                            className="ml-2 w-full text-sm font-medium text-gray-200"
+                          >
+                            {missionType}
+                          </label>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
+        <table className="w-full">
+          <thead>
+            <tr className="text-white bg-zinc-700 border-b-2 border-zinc-500">
+              <th>Done</th>
+              <th>Type</th>
+              <th>Building</th>
+              <th>City</th>
+              <th>(Col,Row)</th>
+              <th>Details</th>
+              <th>Guide</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredArr.map((o, i) => {
+              const foundDoc = dbData.find(
+                (c) =>
+                  c.bldgs.includes(o["Mission Building"].trim()) &&
+                  c.city === o["Mission City"].trim()
+              );
+              return (
+                <tr
+                  key={"mission" + o.ID}
+                  className={`text-xs border-b border-zinc-700 ${
+                    o.complete
+                      ? "text-zinc-500 bg-zinc-700"
+                      : "text-zinc-300 bg-zinc-800"
+                  }`}
+                >
+                  <td className="text-center">
+                    <input
+                      onChange={(e) => {
+                        handleComplete(e, o.ID);
+                      }}
+                      checked={todaysMissions[o.ID - 1].complete}
+                      type="checkbox"
+                      value={o.ID}
+                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-600 ring-offset-gray-800 focus:ring-2 bg-gray-700 border-gray-600 cursor-pointer"
+                    />
+                  </td>
+                  <td>{o["Mission Type"]}</td>
+                  <td>{o["Mission Building"]}</td>
+                  <td>{o["Mission City"]}</td>
+                  <td>
+                    ({foundDoc ? foundDoc.x : "-"},{" "}
+                    {foundDoc ? foundDoc.y : "-"})
+                  </td>
+                  <td>{o.Details}</td>
+                  <td>{o.guide}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
-        <div className="text-center text-white text-xs font-semibold fixed left-4 bottom-4">All data to this website gets sourced from df2profiler.com and df2haven.com<br />Without these, this website wouldn&apos;t work<br/>Made with &#10084;&#65039; by DragonSoup9812</div>
+      {routeLines.map((e, i) => {
+        return (
+          <div
+            key={"routeLine" + i}
+            style={{
+              padding: "0px",
+              margin: "0px",
+              height: "3px",
+              borderRadius: "100px",
+              backgroundColor: "white",
+              lineHeight: "1px",
+              position: "absolute",
+              left: e.left,
+              top: e.top,
+              width: e.length + "px",
+              transform: `rotate(${e.angle}deg)`,
+              WebkitTransform: `rotate(${e.angle}deg)`,
+              msTransform: `rotate(${e.angle}deg)`,
+              MozTransformStyle: `rotate(${e.angle}deg)`,
+            }}
+            className="routeLine"
+          ></div>
+        );
+      })}
     </div>
   );
 }
@@ -412,11 +463,5 @@ export async function getServerSideProps({ req }) {
     };
   } catch (err) {
     console.log(err);
-    return {
-      redirect: {
-        destination: "/plot",
-        statusCode: 307,
-      },
-    };
   }
 }
