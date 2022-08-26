@@ -6,48 +6,11 @@ import absoluteUrl from "next-absolute-url";
 
 export default function Plot({ dbData, df2profiler, origin }) {
   const [todaysMissions, setTodaysMissions] = useState([]);
-
-  const [routeArr, setRouteArr] = useState([]);
-  const [drawRoute, setDrawRoute] = useState(true);
-  const [routeLines, setRouteLines] = useState([]);
-
-  const getOffset = (el) => {
-    const rect = el.getBoundingClientRect();
-    return {
-      left: rect.left + window.pageXOffset,
-      top: rect.top + window.pageYOffset,
-      width: rect.width || el.offsetWidth,
-      height: rect.height || el.offsetHeight,
-    };
-  };
-
-  const connectLine = (div1, div2, color, thickness) => {
-    const off1 = getOffset(div1);
-    const off2 = getOffset(div2);
-
-    const x1 = off1.left + off1.width / 2;
-    const y1 = off1.top + off1.height / 2;
-
-    const x2 = off2.left + off2.width / 2;
-    const y2 = off2.top + off2.height / 2;
-
-    const length = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-
-    const cx = (x1 + x2) / 2 - length / 2;
-    const cy = (y1 + y2) / 2 - thickness / 2;
-
-    const angle = Math.atan2(y1 - y2, x1 - x2) * (180 / Math.PI);
-    return {
-      left: cx,
-      top: cy,
-      length,
-      angle,
-    };
-  };
   useEffect(() => {
     const parser = new DOMParser();
     const profilerDoc = parser.parseFromString(df2profiler, "text/html");
     let listOfObj = [];
+    console.log(profilerDoc);
     [...profilerDoc.querySelectorAll("#missions > span")]
       .filter((e) => {
         return !e.innerHTML.includes("(Outpost Leader)");
@@ -104,17 +67,6 @@ export default function Plot({ dbData, df2profiler, origin }) {
   const [filteredArr, setFilteredArr] = useState(todaysMissions);
   //dropdown state
   const [showdropdown, setShowdropdown] = useState(false);
-  //options
-  const missionTypes = [
-    "Find Person",
-    "Find Item",
-    "Bring Item",
-    "Exterminate",
-    "Blood Samples",
-    "Escape Stalker",
-    "Kill Boss",
-    "Human Remains",
-  ];
   //changing the filter
   const handleChangeFilter = (e) => {
     const changedFilter = filter;
@@ -143,29 +95,10 @@ export default function Plot({ dbData, df2profiler, origin }) {
       return temp.filter((o, i) => filters.includes(o["Mission Type"]));
     });
   };
-  //drawing route lines
-  const handleRouteClick = (e) => {
-    console.log(e.target.id);
-    if (routeArr.includes(e.target.id)) return;
-    setRouteArr((c) => [...c, e.target.id]);
-  };
-  useEffect(() => {
-    if (routeArr.length < 2) return;
-    [...document.querySelectorAll(".routeLine")].forEach((ele) => {
-      ele.parentElement.removeChild(ele);
-    });
-    for (let i = 0; i < routeArr.length - 1; i++) {
-      const d1 = document.getElementById(routeArr[i]);
-      const d2 = document.getElementById(routeArr[i + 1]);
-
-      setRouteLines([...routeLines, connectLine(d1, d2, "white", 2)]);
-    }
-    console.log(routeLines);
-  }, [routeArr]);
 
   return (
-    <div className="min-h-screen pb-8">
-      <div className="tableDiv pt-8 px-4 flex flex-wrap justify-center">
+    <div className="min-h-screen py-8">
+      <div className="tableDiv ml-8 mt-2 mr-4 flex flex-nowrap items-start">
         <table className=' mx-4 mb-4 w-[340px] sm:w-[496px] md:w-[744px] aspect-[5/3] bg-[url("https://df2profiler.com/gamemap/map_background.png")] bg-no-repeat bg-cover table-fixed'>
           <tbody>
             {/* generating rows */}
@@ -293,8 +226,9 @@ export default function Plot({ dbData, df2profiler, origin }) {
             })}
           </tbody>
         </table>
+        <div className=" -mt-5">
         <div>
-          <div className="relative">
+          <div className="relative mb-4">
             <button
               id="dropdownButton"
               data-dropdown-toggle="dropdownDefaultCheckbox"
@@ -338,7 +272,7 @@ export default function Plot({ dbData, df2profiler, origin }) {
                   className="p-3 space-y-3 text-sm text-gray-200"
                   aria-labelledby="dropdownCheckboxButton"
                 >
-                  {missionTypes.map((missionType, i) => {
+                  {Object.keys(filter).map((missionType, i) => {
                     return (
                       <li key={missionType}>
                         <div className="flex items-center p-2 rounded hover:bg-gray-600">
@@ -364,8 +298,8 @@ export default function Plot({ dbData, df2profiler, origin }) {
             )}
           </div>
         </div>
-        <table className="w-full">
-          <thead>
+        <table  className="rounded-t-xl">
+          <thead  className="rounded-t-xl">
             <tr className="text-white bg-zinc-700 border-b-2 border-zinc-500">
               <th>Done</th>
               <th>Type</th>
@@ -417,31 +351,8 @@ export default function Plot({ dbData, df2profiler, origin }) {
             })}
           </tbody>
         </table>
+        </div>
       </div>
-      {routeLines.map((e, i) => {
-        return (
-          <div
-            key={"routeLine" + i}
-            style={{
-              padding: "0px",
-              margin: "0px",
-              height: "3px",
-              borderRadius: "100px",
-              backgroundColor: "white",
-              lineHeight: "1px",
-              position: "absolute",
-              left: e.left,
-              top: e.top,
-              width: e.length + "px",
-              transform: `rotate(${e.angle}deg)`,
-              WebkitTransform: `rotate(${e.angle}deg)`,
-              msTransform: `rotate(${e.angle}deg)`,
-              MozTransformStyle: `rotate(${e.angle}deg)`,
-            }}
-            className="routeLine"
-          ></div>
-        );
-      })}
       <p className="text-white text-center font-bold mt-6">Big thanks to DF2Profiler for all the mission data!</p>
     </div>
   );
