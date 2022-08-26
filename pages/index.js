@@ -442,6 +442,7 @@ export default function Plot({ dbData, df2profiler, origin }) {
           ></div>
         );
       })}
+      <p className="text-white text-center font-bold mt-6">Big thanks to DF2Profiler for all the mission data!</p>
     </div>
   );
 }
