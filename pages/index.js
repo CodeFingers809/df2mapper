@@ -27,6 +27,18 @@ export default function Plot({ dbData, df2profiler, origin }) {
           o.innerHTML.includes("Human Remains")
         ) {
           obj["Mission Type"] = "Human Remains";
+        }else if(obj["Mission Type"] === "Locate / Contact Person"){
+          obj["Mission Type"] = "Find Person";
+        }else if (
+          obj["Mission Type"] === "Find Item" &&
+          o.innerHTML.includes("Blood Sample")
+        ) {
+          obj["Mission Type"] = "Blood Samples";
+        }else if (
+          obj["Mission Type"] === "Find Item" &&
+          o.getAttribute("data-place")==="Open World"
+        ) {
+          obj["Mission Type"] = "Bring Item";
         }
         if (o.getAttribute("data-place").trim() === "Open World") {
           obj["Mission Building"] = o.innerHTML
@@ -97,8 +109,8 @@ export default function Plot({ dbData, df2profiler, origin }) {
 
   return (
     <div className="min-h-screen py-8">
-      <div className="tableDiv ml-8 mt-2 mr-4 flex flex-wrap justify-center lg:flex-nowrap lg:items-start">
-        <table className=' mx-4 mb-4 w-[340px] sm:w-[496px] md:w-[744px] aspect-[5/3] bg-[url("https://df2profiler.com/gamemap/map_background.png")] bg-no-repeat bg-cover table-fixed'>
+      <div className="tableDiv ml-8 mt-2 mr-2 flex flex-wrap justify-center lg:flex-nowrap lg:items-start">
+        <table className='mx-2 mb-4 w-[340px] sm:w-[496px] md:w-[744px] aspect-[5/3] bg-[url("https://df2profiler.com/gamemap/map_background.png")] bg-no-repeat bg-cover table-fixed'>
           <tbody>
             {/* generating rows */}
             {[...Array(18).keys()].map((o, i) => {
@@ -225,7 +237,7 @@ export default function Plot({ dbData, df2profiler, origin }) {
             })}
           </tbody>
         </table>
-        <div className="lg:-mt-5 flex justify-center flex-wrap">
+        <div className="lg:-mt-5 flex justify-center flex-wrap lg:block">
         <div>
           <div className="relative mb-4">
             <button
@@ -325,7 +337,7 @@ export default function Plot({ dbData, df2profiler, origin }) {
                       : "text-zinc-300 bg-zinc-800"
                   }`}
                 >
-                  <td className="text-center">
+                  <td className="text-center px-2">
                     <input
                       onChange={(e) => {
                         handleComplete(e, o.ID);
@@ -336,15 +348,15 @@ export default function Plot({ dbData, df2profiler, origin }) {
                       className="w-4 h-4 text-blue-600 rounded focus:ring-blue-600 ring-offset-gray-800 focus:ring-2 bg-gray-700 border-gray-600 cursor-pointer"
                     />
                   </td>
-                  <td>{o["Mission Type"]}</td>
-                  <td>{o["Mission Building"]}</td>
-                  <td>{o["Mission City"]}</td>
-                  <td>
+                  <td className="px-2">{o["Mission Type"]}</td>
+                  <td className="px-2">{o["Mission Building"]}</td>
+                  <td className="px-2">{o["Mission City"]}</td>
+                  <td className="px-2">
                     ({foundDoc ? foundDoc.x : "-"},{" "}
                     {foundDoc ? foundDoc.y : "-"})
                   </td>
-                  <td>{o.Details}</td>
-                  <td>{o.guide}</td>
+                  <td className="px-2">{o.Details}</td>
+                  <td className="px-2">{o.guide}</td>
                 </tr>
               );
             })}
