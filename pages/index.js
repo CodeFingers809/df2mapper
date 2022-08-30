@@ -123,7 +123,10 @@ export default function Plot({ dbData, df2profiler }) {
           o.innerHTML.includes("Blood Sample")
         ) {
           obj["Mission Type"] = "Blood Samples";
-          obj["Details"] = o.innerText.substring(o.innerText.indexOf("item(s):")+8,o.innerText.indexOf("Building:"));
+          obj["Details"] = o.innerText.substring(
+            o.innerText.indexOf("item(s):") + 8,
+            o.innerText.indexOf("Building:")
+          );
         }
         //open world mission
         if (o.getAttribute("data-place").trim() === "Open World") {
@@ -208,7 +211,7 @@ export default function Plot({ dbData, df2profiler }) {
   };
   //drawing route lines
   const handleRouteClick = (e) => {
-    if (routeArr[routeArr.length-1]=== e.target.id) return;
+    if (routeArr[routeArr.length - 1] === e.target.id) return;
     setRouteArr((c) => [...c, e.target.id]);
   };
   useEffect(() => {
@@ -491,7 +494,12 @@ export default function Plot({ dbData, df2profiler }) {
                     </td>
                     <td className="px-2">{o.Details}</td>
                     <td className="p-2">
-                      <textarea cols="10" rows="2" placeholder="Add Guide" className="outline-none border-none bg-zinc-700 text-xs font-semibold text-zinc-200 p-0 m-0"></textarea>
+                      <textarea
+                        cols="10"
+                        rows="2"
+                        placeholder="Add Guide"
+                        className="outline-none border-none bg-zinc-700 text-xs font-semibold text-zinc-200 p-1 m-0 rounded "
+                      ></textarea>
                     </td>
                   </tr>
                 );
@@ -508,7 +516,7 @@ export default function Plot({ dbData, df2profiler }) {
               style={{
                 padding: "0px",
                 margin: "0px",
-                height: "2px",
+                height: "1px",
                 backgroundColor: "white",
                 lineHeight: "1px",
                 position: "absolute",
@@ -519,6 +527,7 @@ export default function Plot({ dbData, df2profiler }) {
                 WebkitTransform: `rotate(${e.angle}deg)`,
                 msTransform: `rotate(${e.angle}deg)`,
                 MozTransformStyle: `rotate(${e.angle}deg)`,
+                opacity:"70%",
               }}
               className="routeLine pointer-events-none"
             ></div>
