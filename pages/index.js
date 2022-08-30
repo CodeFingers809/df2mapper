@@ -504,12 +504,12 @@ export default function Plot({ dbData, df2profiler }) {
                       {foundDoc ? foundDoc.y : "-"})
                     </td>
                     <td className="px-2">{o.Details}</td>
-                    <td className="p-2">
+                    <td className="p-[3px_4px_0px_0px]">
                       <textarea
                         cols="10"
                         rows="2"
                         placeholder="Add Guide"
-                        className="outline-none border-none bg-zinc-700 text-xs font-semibold text-zinc-200 p-1 m-0 rounded "
+                        className="outline-none border-none bg-zinc-700 text-[10px] leading-[10px] xl:text-xs xl:leading-3 font-semibold text-zinc-200 p-0 xl:p-1 m-0 rounded "
                       ></textarea>
                     </td>
                   </tr>
@@ -546,7 +546,8 @@ export default function Plot({ dbData, df2profiler }) {
         })}
       </div>
       <p className="text-white text-center font-bold mt-6">
-        Big thanks to DF2Profiler for all the mission data!
+        Big thanks to DF2Profiler for all the mission data!<br />
+        You can use an extension called GoFullPage to take screenshots of the entire page if you want to share your guide with others!!
       </p>
     </div>
   );
