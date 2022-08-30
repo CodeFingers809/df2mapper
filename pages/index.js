@@ -261,7 +261,12 @@ export default function Plot({ dbData, df2profiler }) {
                               cellData.bldgs.includes(
                                 o["Mission Building"].trim()
                               ) && o["Mission City"].trim() === cellData.city
-                          )
+                          ) && filteredArr.find(
+                            (o) =>
+                              cellData.bldgs.includes(
+                                o["Mission Building"].trim()
+                              ) && o["Mission City"].trim() === cellData.city
+                          ).complete === false
                             ? { backgroundColor: "#05966960" }
                             : {
                                 backgroundColor: isRed
