@@ -123,7 +123,7 @@ export default function Plot({ dbData, df2profiler }) {
           o.innerHTML.includes("Blood Sample")
         ) {
           obj["Mission Type"] = "Blood Samples";
-          obj["Details"] = "Collect Blood Samples";
+          obj["Details"] = o.innerText.substring(o.innerText.indexOf("item(s):")+8,o.innerText.indexOf("Building:"));
         }
         //open world mission
         if (o.getAttribute("data-place").trim() === "Open World") {
