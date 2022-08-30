@@ -23,10 +23,10 @@ function MyApp({ Component, pageProps }) {
       </Script>
       <Head>
         <title>DF2Mapper</title>
-        <meta name="title" content="DF2Mappwe" />
+        <meta name="title" content="DF2Mapper" />
         <meta
           name="description"
-          content="Auto mapper for dead frontier 2 daily missions!"
+          content="Mission maps for Dead Frontier II. Updates Daily!"
         />
         <meta
           name="keywords"
@@ -37,6 +37,7 @@ function MyApp({ Component, pageProps }) {
         <meta name="language" content="English" />
         <meta name="revisit-after" content="1 days" />
         <meta name="author" content="Ayush Bohra" />
+        <meta httpEquiv="cache-control" content="no-cache"/>
 
         <link rel="icon" href="/favicon.ico" />
       </Head>

@@ -2,10 +2,48 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import redBoxCoords from "../public/redBoxCoords.json";
 import greenBoxCoords from "../public/greenBoxCoords.json";
-import absoluteUrl from "next-absolute-url";
+import { JSDOM } from "jsdom";
 
-export default function Plot({ dbData, df2profiler, origin }) {
+export default function Plot({ dbData, df2profiler }) {
   const [todaysMissions, setTodaysMissions] = useState([]);
+
+  const [routeArr, setRouteArr] = useState([]);
+  const [drawRoute, setDrawRoute] = useState(true);
+  const [routeLines, setRouteLines] = useState([]);
+
+  const getOffset = (el) => {
+    const rect = el.getBoundingClientRect();
+    return {
+      left: rect.left + window.pageXOffset,
+      top: rect.top + window.pageYOffset,
+      width: rect.width || el.offsetWidth,
+      height: rect.height || el.offsetHeight,
+    };
+  };
+
+  const connectLine = (div1, div2, thickness) => {
+    const off1 = getOffset(div1);
+    const off2 = getOffset(div2);
+
+    const x1 = off1.left + off1.width / 2;
+    const y1 = off1.top + off1.height / 2;
+
+    const x2 = off2.left + off2.width / 2;
+    const y2 = off2.top + off2.height / 2;
+
+    const length = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+
+    const cx = (x1 + x2) / 2 - length / 2;
+    const cy = (y1 + y2) / 2 - thickness / 2;
+
+    const angle = Math.atan2(y1 - y2, x1 - x2) * (180 / Math.PI);
+    return {
+      left: cx,
+      top: cy,
+      length,
+      angle,
+    };
+  };
   useEffect(() => {
     const parser = new DOMParser();
     const profilerDoc = parser.parseFromString(df2profiler, "text/html");
@@ -19,27 +57,70 @@ export default function Plot({ dbData, df2profiler, origin }) {
           "Mission Type": o.querySelector("strong").innerText,
           Details: "-",
           complete: false,
-          ID:index+1,
-          guide:"Add Guide"
+          ID: index + 1,
+          guide: "Add Guide",
         };
+        //deatils in find item
+        if (
+          obj["Mission Type"] === "Find Item" &&
+          o.getAttribute("data-place")!=="Open World" &&
+          !o.innerHTML.includes("Human Remains") &&
+          !o.innerHTML.includes("Blood Sample")
+        ) {
+          obj["Details"] = o.innerText.substring(o.innerText.indexOf("item(s):")+8,o.innerText.indexOf("Building:"));
+        }
+        //hr
         if (
           obj["Mission Type"] === "Find Item" &&
           o.innerHTML.includes("Human Remains")
         ) {
           obj["Mission Type"] = "Human Remains";
-        }else if(obj["Mission Type"] === "Locate / Contact Person"){
-          obj["Mission Type"] = "Find Person";
-        }else if (
-          obj["Mission Type"] === "Find Item" &&
-          o.innerHTML.includes("Blood Sample")
+          obj["Details"]="Human Remains"
+        }
+        //find person
+        if (
+          obj["Mission Type"] === "Locate / Contact Person"
         ) {
-          obj["Mission Type"] = "Blood Samples";
-        }else if (
+          obj["Mission Type"] = "Find Person";
+          obj["Details"] = o.innerText.substring(o.innerText.indexOf("contact ")+8,o.innerText.indexOf(" in "));
+        }
+        //bring item
+        if (
           obj["Mission Type"] === "Find Item" &&
           o.getAttribute("data-place")==="Open World"
         ) {
           obj["Mission Type"] = "Bring Item";
+          obj["Details"] = o.innerText.substring(o.innerText.lastIndexOf(":")+1,o.innerText.length);
         }
+        //details of 3boss
+        if (
+          obj["Mission Type"] === "Kill Boss" &&
+          o.getAttribute("data-place")==="Open World"
+        ) {
+          obj["Details"] = "Kill 3 Boss Zombie";
+        }
+        //details of sm
+        if (
+          obj["Mission Type"] === "Escape Stalker" &&
+          o.getAttribute("data-place")==="Open World"
+        ) {
+          obj["Details"] = "Escape 1 Stalker";
+        }
+        //details of ext
+        if (
+          obj["Mission Type"] === "Exterminate"
+        ) {
+          obj["Details"] = "Clear building of all zombies";
+        }
+        //bs
+        if (
+          obj["Mission Type"] === "Find Item" &&
+          o.innerHTML.includes("Blood Sample")
+        ) {
+          obj["Mission Type"] = "Blood Samples";
+          obj["Details"] = "Collect Blood Samples";
+        }
+        //open world mission
         if (o.getAttribute("data-place").trim() === "Open World") {
           obj["Mission Building"] = o.innerHTML
             .split("(")[1]
@@ -55,9 +136,21 @@ export default function Plot({ dbData, df2profiler, origin }) {
           obj["Mission Building"] = o.getAttribute("data-place").split(", ")[0];
           obj["Mission City"] = o.getAttribute("data-place").split(", ")[1];
         }
-        
+
         listOfObj.push(obj);
       });
+    // const tempLocs = [];
+    //       [...parser.parseFromString(``,"text/html").querySelectorAll("#map > tbody > tr > td")].forEach((td,i)=>{
+    //   const tempObj = {
+    //     x:td.getAttribute("data-xcoord"),
+    //     y:td.getAttribute("data-ycoord"),
+    //     city:td.getAttribute("data-district"),
+    //     level:td.getAttribute("data-level"),
+    //     bldgs:td.getAttribute("data-buildings")===""?[]:td.getAttribute("data-buildings").split(","),
+    //   }
+    //   tempLocs.push(tempObj)
+    // })
+    // console.log(JSON.stringify(tempLocs))
     setFilteredArr(listOfObj);
     setTodaysMissions(listOfObj);
   }, []);
@@ -80,6 +173,8 @@ export default function Plot({ dbData, df2profiler, origin }) {
   const [showdropdown, setShowdropdown] = useState(false);
   //changing the filter
   const handleChangeFilter = (e) => {
+    setRouteArr([]);
+    setRouteLines([]);
     const changedFilter = filter;
     changedFilter[e.target.getAttribute("data-filter-name")] = e.target.checked;
     setFilter(changedFilter);
@@ -106,6 +201,19 @@ export default function Plot({ dbData, df2profiler, origin }) {
       return temp.filter((o, i) => filters.includes(o["Mission Type"]));
     });
   };
+  //drawing route lines
+  const handleRouteClick = (e) => {
+    if (routeArr.includes(e.target.id)) return;
+    setRouteArr((c) => [...c, e.target.id]);
+  };
+  useEffect(() => {
+    if (routeArr.length < 2) return;
+    for (let i = 0; i < routeArr.length - 1; i++) {
+      const d1 = document.getElementById(routeArr[i]);
+      const d2 = document.getElementById(routeArr[i + 1]);
+      setRouteLines([...routeLines, connectLine(d1, d2, 2)]);
+    }
+  }, [routeArr]);
 
   return (
     <div className="min-h-screen py-8">
@@ -131,6 +239,7 @@ export default function Plot({ dbData, df2profiler, origin }) {
                       <td
                         key={"tile" + index}
                         id={"tile" + x + "/" + y}
+                        onClick={handleRouteClick}
                         className={`border border-gray-700 hover:shadow-[inset_0_0_0_3px_#4b5563] relative group ${
                           x % 6 === 0 && x !== 30 ? "border-r-gray-400" : ""
                         } ${
@@ -138,7 +247,6 @@ export default function Plot({ dbData, df2profiler, origin }) {
                             ? "border-b-gray-400"
                             : "selection:"
                         }`}
-                        
                         style={
                           filteredArr.find(
                             (o) =>
@@ -238,150 +346,218 @@ export default function Plot({ dbData, df2profiler, origin }) {
           </tbody>
         </table>
         <div className="lg:-mt-5 flex justify-center flex-wrap lg:block">
-        <div>
-          <div className="relative mb-4">
-            <button
-              id="dropdownButton"
-              data-dropdown-toggle="dropdownDefaultCheckbox"
-              className="text-white focus:ring-4 focus:outline-nonefont-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800"
-              type="button"
-              onClick={() => setShowdropdown(!showdropdown)}
-            >
-              Mission Types{" "}
-              <svg
-                className="ml-2 w-4 h-4"
-                aria-hidden="true"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
+          <div>
+            <div className="relative mb-4">
+              <button
+                id="dropdownButton"
+                data-dropdown-toggle="dropdownDefaultCheckbox"
+                className="text-white focus:ring-4 focus:outline-nonefont-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800"
+                type="button"
+                onClick={() => setShowdropdown(!showdropdown)}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M19 9l-7 7-7-7"
-                ></path>
-              </svg>
-            </button>
+                Mission Types{" "}
+                <svg
+                  className="ml-2 w-4 h-4"
+                  aria-hidden="true"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  ></path>
+                </svg>
+              </button>
 
-            {showdropdown && (
-              <div
-                id="dropdownMenu"
-                className="z-10 w-48 rounded divide-y shadow bg-gray-700 divide-gray-600 block"
-                data-popper-reference-hidden=""
-                data-popper-escaped=""
-                data-popper-placement="bottom"
-                style={{
-                  position: "absolute",
-                  inset: "0px auto auto 0px",
-                  margin: "10px 0px",
-                  top: "100%",
+              {showdropdown && (
+                <div
+                  id="dropdownMenu"
+                  className="z-10 w-48 rounded divide-y shadow bg-gray-700 divide-gray-600 block"
+                  data-popper-reference-hidden=""
+                  data-popper-escaped=""
+                  data-popper-placement="bottom"
+                  style={{
+                    position: "absolute",
+                    inset: "0px auto auto 0px",
+                    margin: "10px 0px",
+                    top: "100%",
+                  }}
+                >
+                  <ul
+                    className="p-3 space-y-3 text-sm text-gray-200"
+                    aria-labelledby="dropdownCheckboxButton"
+                  >
+                    {Object.keys(filter).map((missionType, i) => {
+                      return (
+                        <li key={missionType}>
+                          <div className="flex items-center p-2 rounded hover:bg-gray-600">
+                            <input
+                              data-filter-name={missionType}
+                              checked={filter[missionType]}
+                              type="checkbox"
+                              onChange={handleChangeFilter}
+                              className="w-4 h-4 text-blue-600 rounded  focus:ring-blue-600 ring-offset-gray-700 focus:ring-2 bg-gray-600 border-gray-500 outline-none cursor-pointer"
+                            />
+                            <label
+                              htmlFor={missionType}
+                              className="ml-2 w-full text-sm font-medium text-gray-200"
+                            >
+                              {missionType}
+                            </label>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+              <button
+                className="text-white focus:ring-4 focus:outline-nonefont-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-green-600 hover:bg-green-700 focus:ring-green-800 ml-4"
+                type="button"
+                onClick={() => {
+                  setRouteArr([]);
                 }}
               >
-                <ul
-                  className="p-3 space-y-3 text-sm text-gray-200"
-                  aria-labelledby="dropdownCheckboxButton"
-                >
-                  {Object.keys(filter).map((missionType, i) => {
-                    return (
-                      <li key={missionType}>
-                        <div className="flex items-center p-2 rounded hover:bg-gray-600">
-                          <input
-                            data-filter-name={missionType}
-                            checked={filter[missionType]}
-                            type="checkbox"
-                            onChange={handleChangeFilter}
-                            className="w-4 h-4 text-blue-600 rounded  focus:ring-blue-600 ring-offset-gray-700 focus:ring-2 bg-gray-600 border-gray-500 outline-none cursor-pointer"
-                          />
-                          <label
-                            htmlFor={missionType}
-                            className="ml-2 w-full text-sm font-medium text-gray-200"
-                          >
-                            {missionType}
-                          </label>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
+                Break Route
+              </button>
+              <button
+                className="text-white focus:ring-4 focus:outline-nonefont-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-red-600 hover:bg-red-700 focus:ring-red-800 ml-4"
+                type="button"
+                onClick={() => {
+                  setRouteArr([]);
+                  setRouteLines([]);
+                }}
+              >
+                Clear Route Lines
+              </button>
+            </div>
           </div>
-        </div>
-        <table>
-          <thead>
-            <tr className="text-white bg-zinc-700 border-b-2 border-zinc-500">
-              <th className="rounded-tl-xl">Done</th>
-              <th>Type</th>
-              <th>Building</th>
-              <th>City</th>
-              <th>(Col,Row)</th>
-              <th>Details</th>
-              <th  className="rounded-tr-xl">Guide</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredArr.map((o, i) => {
-              const foundDoc = dbData.find(
-                (c) =>
-                  c.bldgs.includes(o["Mission Building"].trim()) &&
-                  c.city === o["Mission City"].trim()
-              );
-              return (
-                <tr
-                  key={"mission" + o.ID}
-                  className={`text-xs border-b border-zinc-700 ${
-                    o.complete
-                      ? "text-zinc-500 bg-zinc-700"
-                      : "text-zinc-300 bg-zinc-800"
-                  }`}
-                >
-                  <td className="text-center px-2">
-                    <input
-                      onChange={(e) => {
-                        handleComplete(e, o.ID);
-                      }}
-                      checked={todaysMissions[o.ID - 1].complete}
-                      type="checkbox"
-                      value={o.ID}
-                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-600 ring-offset-gray-800 focus:ring-2 bg-gray-700 border-gray-600 cursor-pointer"
-                    />
-                  </td>
-                  <td className="px-2">{o["Mission Type"]}</td>
-                  <td className="px-2">{o["Mission Building"]}</td>
-                  <td className="px-2">{o["Mission City"]}</td>
-                  <td className="px-2">
-                    ({foundDoc ? foundDoc.x : "-"},{" "}
-                    {foundDoc ? foundDoc.y : "-"})
-                  </td>
-                  <td className="px-2">{o.Details}</td>
-                  <td className="px-2">{o.guide}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+          <table>
+            <thead>
+              <tr className="text-white bg-zinc-700 border-b-2 border-zinc-500">
+                <th className="rounded-tl-xl">Done</th>
+                <th>Type</th>
+                <th>Building</th>
+                <th>City</th>
+                <th>(Col,Row)</th>
+                <th>Details</th>
+                <th className="rounded-tr-xl">Guide</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredArr.map((o, i) => {
+                const foundDoc = dbData.find(
+                  (c) =>
+                    c.bldgs.includes(o["Mission Building"].trim()) &&
+                    c.city === o["Mission City"].trim()
+                );
+                return (
+                  <tr
+                    key={"mission" + o.ID}
+                    className={`text-xs border-b border-zinc-700 ${
+                      o.complete
+                        ? "text-zinc-500 bg-zinc-700"
+                        : "text-zinc-300 bg-zinc-800"
+                    }`}
+                  >
+                    <td className="text-center px-2">
+                      <input
+                        onChange={(e) => {
+                          handleComplete(e, o.ID);
+                        }}
+                        checked={todaysMissions[o.ID - 1].complete}
+                        type="checkbox"
+                        value={o.ID}
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-600 ring-offset-gray-800 focus:ring-2 bg-gray-700 border-gray-600 cursor-pointer"
+                      />
+                    </td>
+                    <td className="px-2">{o["Mission Type"]}</td>
+                    <td className="px-2">{o["Mission Building"]}</td>
+                    <td className="px-2">{o["Mission City"]}</td>
+                    <td className="px-2">
+                      ({foundDoc ? foundDoc.x : "-"},{" "}
+                      {foundDoc ? foundDoc.y : "-"})
+                    </td>
+                    <td className="px-2">{o.Details}</td>
+                    <td className="px-2">{o.guide}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
-      <p className="text-white text-center font-bold mt-6">Big thanks to DF2Profiler for all the mission data!</p>
+      <div>
+        {routeLines.map((e, i) => {
+          return (
+            <div
+              key={e}
+              style={{
+                padding: "0px",
+                margin: "0px",
+                height: "2px",
+                backgroundColor: "white",
+                lineHeight: "1px",
+                position: "absolute",
+                left: e.left,
+                top: e.top,
+                width: e.length + "px",
+                transform: `rotate(${e.angle}deg)`,
+                WebkitTransform: `rotate(${e.angle}deg)`,
+                msTransform: `rotate(${e.angle}deg)`,
+                MozTransformStyle: `rotate(${e.angle}deg)`,
+              }}
+              className="routeLine"
+            ></div>
+          );
+        })}
+      </div>
+      <p className="text-white text-center font-bold mt-6">
+        Big thanks to DF2Profiler for all the mission data!
+      </p>
     </div>
   );
 }
 
-export async function getServerSideProps({ req }) {
+export async function getServerSideProps() {
   try {
-    const { origin } = absoluteUrl(req);
-    const res = await axios.get(`${origin}/api/create`);
     const df2profiler = await axios({
       method: "GET",
       url: "https://df2profiler.com/gamemap/",
     });
+    const { document } = new JSDOM(df2profiler.data).window;
     return {
       props: {
-        dbData: res.data,
         df2profiler: df2profiler.data,
-        origin,
+        dbData: [...document.querySelector("#map").querySelectorAll("td")].map(
+          (o, i) => {
+            return {
+              x: parseInt(o.getAttribute("data-xcoord")),
+              y: parseInt(o.getAttribute("data-ycoord")),
+              bldgs:
+                o.getAttribute("data-buildings") === ""
+                  ? []
+                  : o.getAttribute("data-buildings").split(","),
+              level: parseInt(o.getAttribute("data-level")),
+              city:
+                o.getAttribute("data-district") === "RavenwallHeights"
+                  ? "Ravenwall Heights"
+                  : o.getAttribute("data-district") === "AlbandalePark"
+                  ? "Albandale Park"
+                  : o.getAttribute("data-district") === "RichbowHunt"
+                  ? "Richbow Hunt"
+                  : o.getAttribute("data-district") === "WestMoledale"
+                  ? "West Moledale"
+                  : o.getAttribute("data-district") === "SouthMoorhurst"
+                  ? "South Moorhurst"
+                  : o.getAttribute("data-district"),
+            };
+          }
+        ),
       },
     };
   } catch (err) {
