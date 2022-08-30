@@ -224,9 +224,9 @@ export default function Plot({ dbData, df2profiler }) {
   }, [routeArr]);
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-8 w-full">
       <div className="tableDiv ml-8 mt-2 mr-2 flex flex-wrap justify-center lg:flex-nowrap lg:items-start">
-        <table className='mx-2 mr-4 mb-4 w-[340px] sm:w-[496px] md:w-[744px] aspect-[5/3] bg-[url("https://df2profiler.com/gamemap/map_background.png")] bg-no-repeat bg-cover table-fixed'>
+        <table className='mx-2 mr-4 mb-4 w-[350px] sm:w-[500px] md:w-[750px] aspect-[5/3] bg-[url("https://df2profiler.com/gamemap/map_background.png")] bg-no-repeat bg-cover table-fixed'>
           <tbody>
             {/* generating rows */}
             {[...Array(18).keys()].map((o, i) => {
@@ -366,7 +366,7 @@ export default function Plot({ dbData, df2profiler }) {
             })}
           </tbody>
         </table>
-        <div className="lg:-mt-5 flex justify-center flex-wrap lg:block">
+        <div className="lg:-mt-5 flex justify-center flex-wrap lg:block flex-1">
           <div>
             <div className="relative mb-4">
               <button
@@ -457,7 +457,7 @@ export default function Plot({ dbData, df2profiler }) {
               </button>
             </div>
           </div>
-          <table>
+          <table className="w-full">
             <thead>
               <tr className="text-white bg-zinc-700 border-b-2 border-zinc-500">
                 <th className="rounded-tl-xl">Done</th>
