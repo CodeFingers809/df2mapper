@@ -208,7 +208,7 @@ export default function Plot({ dbData, df2profiler }) {
   };
   //drawing route lines
   const handleRouteClick = (e) => {
-    if (routeArr.includes(e.target.id)) return;
+    if (routeArr[routeArr.length-1]=== e.target.id) return;
     setRouteArr((c) => [...c, e.target.id]);
   };
   useEffect(() => {
@@ -465,7 +465,7 @@ export default function Plot({ dbData, df2profiler }) {
                 return (
                   <tr
                     key={"mission" + o.ID}
-                    className={`text-xs border-b border-zinc-700 ${
+                    className={`text-[10px] xl:text-xs 2xl:text-sm border-b border-zinc-700 ${
                       o.complete
                         ? "text-zinc-500 bg-zinc-700"
                         : "text-zinc-300 bg-zinc-800"
@@ -479,7 +479,7 @@ export default function Plot({ dbData, df2profiler }) {
                         checked={todaysMissions[o.ID - 1].complete}
                         type="checkbox"
                         value={o.ID}
-                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-600 ring-offset-gray-800 focus:ring-2 bg-gray-700 border-gray-600 cursor-pointer"
+                        className="w-3 xl:w-4 h-3 xl:h-4 text-blue-600 rounded focus:ring-blue-600 ring-offset-gray-800 focus:ring-2 bg-gray-700 border-gray-600 cursor-pointer"
                       />
                     </td>
                     <td className="px-2">{o["Mission Type"]}</td>
@@ -518,7 +518,7 @@ export default function Plot({ dbData, df2profiler }) {
                 msTransform: `rotate(${e.angle}deg)`,
                 MozTransformStyle: `rotate(${e.angle}deg)`,
               }}
-              className="routeLine"
+              className="routeLine pointer-events-none"
             ></div>
           );
         })}
