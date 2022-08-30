@@ -63,11 +63,14 @@ export default function Plot({ dbData, df2profiler }) {
         //deatils in find item
         if (
           obj["Mission Type"] === "Find Item" &&
-          o.getAttribute("data-place")!=="Open World" &&
+          o.getAttribute("data-place") !== "Open World" &&
           !o.innerHTML.includes("Human Remains") &&
           !o.innerHTML.includes("Blood Sample")
         ) {
-          obj["Details"] = o.innerText.substring(o.innerText.indexOf("item(s):")+8,o.innerText.indexOf("Building:"));
+          obj["Details"] = o.innerText.substring(
+            o.innerText.indexOf("item(s):") + 8,
+            o.innerText.indexOf("Building:")
+          );
         }
         //hr
         if (
@@ -75,41 +78,43 @@ export default function Plot({ dbData, df2profiler }) {
           o.innerHTML.includes("Human Remains")
         ) {
           obj["Mission Type"] = "Human Remains";
-          obj["Details"]="Human Remains"
+          obj["Details"] = "Human Remains";
         }
         //find person
-        if (
-          obj["Mission Type"] === "Locate / Contact Person"
-        ) {
+        if (obj["Mission Type"] === "Locate / Contact Person") {
           obj["Mission Type"] = "Find Person";
-          obj["Details"] = o.innerText.substring(o.innerText.indexOf("contact ")+8,o.innerText.indexOf(" in "));
+          obj["Details"] = o.innerText.substring(
+            o.innerText.indexOf("contact ") + 8,
+            o.innerText.indexOf(" in ")
+          );
         }
         //bring item
         if (
           obj["Mission Type"] === "Find Item" &&
-          o.getAttribute("data-place")==="Open World"
+          o.getAttribute("data-place") === "Open World"
         ) {
           obj["Mission Type"] = "Bring Item";
-          obj["Details"] = o.innerText.substring(o.innerText.lastIndexOf(":")+1,o.innerText.length);
+          obj["Details"] = o.innerText.substring(
+            o.innerText.lastIndexOf(":") + 1,
+            o.innerText.length
+          );
         }
         //details of 3boss
         if (
           obj["Mission Type"] === "Kill Boss" &&
-          o.getAttribute("data-place")==="Open World"
+          o.getAttribute("data-place") === "Open World"
         ) {
           obj["Details"] = "Kill 3 Boss Zombie";
         }
         //details of sm
         if (
           obj["Mission Type"] === "Escape Stalker" &&
-          o.getAttribute("data-place")==="Open World"
+          o.getAttribute("data-place") === "Open World"
         ) {
           obj["Details"] = "Escape 1 Stalker";
         }
         //details of ext
-        if (
-          obj["Mission Type"] === "Exterminate"
-        ) {
+        if (obj["Mission Type"] === "Exterminate") {
           obj["Details"] = "Clear building of all zombies";
         }
         //bs
@@ -317,16 +322,18 @@ export default function Plot({ dbData, df2profiler }) {
                                   return (
                                     <span
                                       key={bldg}
-                                      className={`bldgName text-xs text-zinc-400 ${
-                                        filteredArr.find(
-                                          (o) =>
-                                            o["Mission Building"].trim() ===
-                                              bldg &&
-                                            o["Mission City"].trim() ===
-                                              cellData.city
-                                        )
+                                      className={`bldgName text-xs ${
+                                        bldg === "Comer and Son Inc"
+                                          ? "text-red-600"
+                                          : filteredArr.find(
+                                              (o) =>
+                                                o["Mission Building"].trim() ===
+                                                  bldg &&
+                                                o["Mission City"].trim() ===
+                                                  cellData.city
+                                            )
                                           ? "text-emerald-600"
-                                          : ""
+                                          : "text-zinc-400"
                                       }`}
                                     >
                                       {bldg}
