@@ -223,7 +223,7 @@ export default function Plot({ dbData, df2profiler }) {
   return (
     <div className="min-h-screen py-8">
       <div className="tableDiv ml-8 mt-2 mr-2 flex flex-wrap justify-center lg:flex-nowrap lg:items-start">
-        <table className='mx-2 mb-4 w-[340px] sm:w-[496px] md:w-[744px] aspect-[5/3] bg-[url("https://df2profiler.com/gamemap/map_background.png")] bg-no-repeat bg-cover table-fixed'>
+        <table className='mx-2 mr-4 mb-4 w-[340px] sm:w-[496px] md:w-[744px] aspect-[5/3] bg-[url("https://df2profiler.com/gamemap/map_background.png")] bg-no-repeat bg-cover table-fixed'>
           <tbody>
             {/* generating rows */}
             {[...Array(18).keys()].map((o, i) => {
@@ -490,7 +490,9 @@ export default function Plot({ dbData, df2profiler }) {
                       {foundDoc ? foundDoc.y : "-"})
                     </td>
                     <td className="px-2">{o.Details}</td>
-                    <td className="px-2">{o.guide}</td>
+                    <td className="p-2">
+                      <textarea cols="10" rows="2" placeholder="Add Guide" className="outline-none border-none bg-zinc-700 text-xs font-semibold text-zinc-200 p-0 m-0"></textarea>
+                    </td>
                   </tr>
                 );
               })}
