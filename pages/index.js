@@ -174,40 +174,143 @@ export default function Plot({ dbData, df2profiler }) {
     "Kill Boss": false,
     "Human Remains": false,
   });
+  const [cityFilter, setCityFilter] = useState({
+    "Ravenwall Heights": false,
+    Dallbow: false,
+    "West Moledale": false,
+    "Albandale Park": false,
+    Coopertown: false,
+    Dawnhill: false,
+    Overwood: false,
+    "Richbow Hunt": false,
+    Haverbrook: false,
+    Greywood: false,
+    Duntsville: false,
+    "South Moorhurst": false,
+    Lerwillbury: false,
+    Archbrook: false,
+    Wolfstable: false,
+  });
+  const [minLvl, setMinLvl] = useState(0);
+  const [maxLvl, setMaxLvl] = useState(50);
 
   //filtered missions arr
   const [filteredArr, setFilteredArr] = useState(todaysMissions);
   //dropdown state
-  const [showdropdown, setShowdropdown] = useState(false);
+  const [showdropdown1, setShowdropdown1] = useState(false);
+  const [showdropdown2, setShowdropdown2] = useState(false);
   //changing the filter
+  const filterTheArr = () => {
+    const filters = Object.keys(filter).filter((o) => filter[o]);
+    const cityfilters = Object.keys(cityFilter).filter((o) => cityFilter[o]);
+    setFilteredArr((c) => {
+      if (
+        (cityfilters.length === 0 || cityfilters.length === 15) &&
+        (filters.length === 0 || filters.length === 7)
+      ) {
+        return todaysMissions.filter((o, i) => {
+          const foundPlc = dbData.find(
+            (e) =>
+              e.bldgs.includes(o["Mission Building"]) &&
+              e.city === o["Mission City"]
+          );
+          if (!foundPlc) return false;
+          const missionLvl = dbData.find(
+            (e) =>
+              e.bldgs.includes(o["Mission Building"]) &&
+              e.city === o["Mission City"]
+          ).level;
+          return missionLvl >= minLvl && missionLvl <= maxLvl;
+        });
+      } else if (
+        (cityfilters.length === 0 || cityfilters.length === 15) &&
+        !(filters.length === 0 || filters.length === 7)
+      ) {
+        return todaysMissions.filter((o, i) => {
+          const foundPlc = dbData.find(
+            (e) =>
+              e.bldgs.includes(o["Mission Building"]) &&
+              e.city === o["Mission City"]
+          );
+          if (!foundPlc) return false;
+          const missionLvl = dbData.find(
+            (e) =>
+              e.bldgs.includes(o["Mission Building"]) &&
+              e.city === o["Mission City"]
+          ).level;
+          return (
+            filters.includes(o["Mission Type"]) &&
+            missionLvl >= minLvl &&
+            missionLvl <= maxLvl
+          );
+        });
+      } else if (
+        !(cityfilters.length === 0 || cityfilters.length === 15) &&
+        (filters.length === 0 || filters.length === 7)
+      ) {
+        return todaysMissions.filter((o, i) => {
+          const foundPlc = dbData.find(
+            (e) =>
+              e.bldgs.includes(o["Mission Building"]) &&
+              e.city === o["Mission City"]
+          );
+          if (!foundPlc) return false;
+          const missionLvl = dbData.find(
+            (e) =>
+              e.bldgs.includes(o["Mission Building"]) &&
+              e.city === o["Mission City"]
+          ).level;
+          return (
+            cityfilters.includes(o["Mission City"]) &&
+            missionLvl >= minLvl &&
+            missionLvl <= maxLvl
+          );
+        });
+      } else {
+        return todaysMissions.filter((o, i) => {
+          const foundPlc = dbData.find(
+            (e) =>
+              e.bldgs.includes(o["Mission Building"]) &&
+              e.city === o["Mission City"]
+          );
+          if (!foundPlc) return false;
+          const missionLvl = dbData.find(
+            (e) =>
+              e.bldgs.includes(o["Mission Building"]) &&
+              e.city === o["Mission City"]
+          ).level;
+          return (
+            filters.includes(o["Mission Type"]) &&
+            cityfilters.includes(o["Mission City"]) &&
+            missionLvl >= minLvl &&
+            missionLvl <= maxLvl
+          );
+        });
+      }
+    });
+  };
   const handleChangeFilter = (e) => {
     setRouteArr([]);
     setRouteLines([]);
     const changedFilter = filter;
     changedFilter[e.target.getAttribute("data-filter-name")] = e.target.checked;
     setFilter(changedFilter);
-    const filters = Object.keys(filter).filter((o) => filter[o]);
-    setFilteredArr((c) => {
-      if (filters.length === 0 || filters.length === 7) {
-        return todaysMissions;
-      }
-      return todaysMissions.filter((o, i) =>
-        filters.includes(o["Mission Type"])
-      );
-    });
+    filterTheArr();
+  };
+  const handleChangeCity = (e) => {
+    setRouteArr([]);
+    setRouteLines([]);
+    const changedFilter = cityFilter;
+    changedFilter[e.target.getAttribute("data-filter-name")] = e.target.checked;
+    setCityFilter(changedFilter);
+    filterTheArr();
   };
   //setting complete missions
   const handleComplete = (e, id) => {
     let temp = [...todaysMissions];
     temp[id - 1].complete = !temp[id - 1].complete;
     setTodaysMissions(temp);
-    const filters = Object.keys(filter).filter((o) => filter[o]);
-    setFilteredArr((c) => {
-      if (filters.length === 0 || filters.length === 7) {
-        return temp;
-      }
-      return temp.filter((o, i) => filters.includes(o["Mission Type"]));
-    });
+    filterTheArr();
   };
   //drawing route lines
   const handleRouteClick = (e) => {
@@ -223,6 +326,11 @@ export default function Plot({ dbData, df2profiler }) {
     }
   }, [routeArr]);
 
+  useEffect(() => {
+    if (minLvl && maxLvl) {
+      filterTheArr();
+    }
+  }, [minLvl, maxLvl]);
   return (
     <div className="min-h-screen py-8 w-full">
       <div className="tableDiv ml-8 mt-2 mr-2 flex flex-wrap justify-center lg:flex-nowrap lg:items-start">
@@ -261,11 +369,14 @@ export default function Plot({ dbData, df2profiler }) {
                               cellData.bldgs.includes(
                                 o["Mission Building"].trim()
                               ) && o["Mission City"].trim() === cellData.city
-                          ) && filteredArr.find(
+                          ) &&
+                          filteredArr.find(
                             (o) =>
                               cellData.bldgs.includes(
                                 o["Mission Building"].trim()
-                              ) && o["Mission City"].trim() === cellData.city && o.complete === false
+                              ) &&
+                              o["Mission City"].trim() === cellData.city &&
+                              o.complete === false
                           )
                             ? { backgroundColor: "#05966960" }
                             : {
@@ -339,7 +450,8 @@ export default function Plot({ dbData, df2profiler }) {
                                                   bldg &&
                                                 o["Mission City"].trim() ===
                                                   cellData.city
-                                            ) && filteredArr.find(
+                                            ) &&
+                                            filteredArr.find(
                                               (o) =>
                                                 o["Mission Building"].trim() ===
                                                   bldg &&
@@ -367,103 +479,180 @@ export default function Plot({ dbData, df2profiler }) {
           </tbody>
         </table>
         <div className="lg:-mt-5 flex justify-center flex-wrap lg:block flex-1">
-          <div>
-            <div className="relative mb-4">
-              <button
-                id="dropdownButton"
-                data-dropdown-toggle="dropdownDefaultCheckbox"
-                className="text-white focus:ring-4 focus:outline-nonefont-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800"
-                type="button"
-                onClick={() => setShowdropdown(!showdropdown)}
-              >
-                Mission Types{" "}
-                <svg
-                  className="ml-2 w-4 h-4"
-                  aria-hidden="true"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M19 9l-7 7-7-7"
-                  ></path>
-                </svg>
-              </button>
-
-              {showdropdown && (
-                <div
-                  id="dropdownMenu"
-                  className="z-10 w-48 rounded divide-y shadow bg-gray-700 divide-gray-600 block"
-                  data-popper-reference-hidden=""
-                  data-popper-escaped=""
-                  data-popper-placement="bottom"
-                  style={{
-                    position: "absolute",
-                    inset: "0px auto auto 0px",
-                    margin: "10px 0px",
-                    top: "100%",
-                  }}
-                >
-                  <ul
-                    className="p-3 space-y-3 text-sm text-gray-200"
-                    aria-labelledby="dropdownCheckboxButton"
-                  >
-                    {Object.keys(filter).map((missionType, i) => {
-                      return (
-                        <li key={missionType}>
-                          <div className="flex items-center p-2 rounded hover:bg-gray-600">
-                            <input
-                              data-filter-name={missionType}
-                              checked={filter[missionType]}
-                              type="checkbox"
-                              onChange={handleChangeFilter}
-                              className="w-4 h-4 text-blue-600 rounded  focus:ring-blue-600 ring-offset-gray-700 focus:ring-2 bg-gray-600 border-gray-500 outline-none cursor-pointer"
-                            />
-                            <label
-                              htmlFor={missionType}
-                              className="ml-2 w-full text-sm font-medium text-gray-200"
-                            >
-                              {missionType}
-                            </label>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              )}
-              <button
-                className="text-white focus:ring-4 focus:outline-nonefont-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-green-600 hover:bg-green-700 focus:ring-green-800 ml-4"
-                type="button"
-                onClick={() => {
-                  setRouteArr([]);
+          <div className="mb-4">
+            <button
+              className="text-white focus:ring-4 focus:outline-nonefont-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-green-600 hover:bg-green-700 focus:ring-green-800 mr-4"
+              type="button"
+              onClick={() => {
+                setRouteArr([]);
+              }}
+            >
+              Break Route
+            </button>
+            <button
+              className="text-white focus:ring-4 focus:outline-nonefont-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-red-600 hover:bg-red-700 focus:ring-red-800 mr-4"
+              type="button"
+              onClick={() => {
+                setRouteArr([]);
+                setRouteLines([]);
+              }}
+            >
+              Clear Route Lines
+            </button>
+            <button
+              className="text-white focus:ring-4 focus:outline-nonefont-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-violet-600 hover:bg-violet-700 focus:ring-violet-800 mr-4"
+              type="button"
+              onClick={() => {
+                setRouteArr(routeArr.slice(0,routeArr.length-1));
+                setRouteLines(routeLines.slice(0, routeLines.length-2));
+              }}
+            >
+              Undo Route
+            </button>
+            <div className="mt-4">
+              <label htmlFor="minlvl" className="text-white">Min LvL</label>
+              <input
+                type="number"
+                id="minlvl"
+                className="border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500 mr-4 w-10"
+                min={0}
+                max={50}
+                value={minLvl}
+                onChange={(e) => {
+                  let val = parseInt(e.target.value);
+                  if (e.target.value.length===0 || val < 0 || val > 50) return;
+                  setMinLvl(parseInt(val));
                 }}
-              >
-                Break Route
-              </button>
-              <button
-                className="text-white focus:ring-4 focus:outline-nonefont-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-red-600 hover:bg-red-700 focus:ring-red-800 ml-4"
-                type="button"
-                onClick={() => {
-                  setRouteArr([]);
-                  setRouteLines([]);
+              />
+                <label htmlFor="maxlvl" className="text-white">Max LvL</label>
+              <input
+                type="number"
+                id="maxlvl"
+                className="border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500 mr-4 w-10"
+                min={0}
+                max={50}
+                value={maxLvl}
+                onChange={(e) => {
+                  let val = parseInt(e.target.value);
+                  if (e.target.value.length===0 || val < 0 || val > 50) return;
+                  setMaxLvl(parseInt(val));
                 }}
-              >
-                Clear Route Lines
-              </button>
+              />
             </div>
           </div>
           <table className="w-full">
             <thead>
               <tr className="text-white bg-zinc-700 border-b-2 border-zinc-500">
                 <th className="rounded-tl-xl">Done</th>
-                <th>Type</th>
+                <th className="relative mb-4 text-start">
+                  <button
+                    id="dropdownButton"
+                    data-dropdown-toggle="dropdownDefaultCheckbox"
+                    className="text-white text-sm px-4 py-2 selection:text-center inline-flex items-center bg-zinc-700 hover:bg-zinc-800"
+                    type="button"
+                    onClick={() => setShowdropdown1(!showdropdown1)}
+                  >
+                    Type
+                  </button>
+
+                  {showdropdown1 && (
+                    <div
+                      id="dropdownMenu"
+                      className="z-10 w-44 rounded divide-y shadow bg-gray-700 divide-gray-600 block"
+                      data-popper-reference-hidden=""
+                      data-popper-escaped=""
+                      data-popper-placement="bottom"
+                      style={{
+                        position: "absolute",
+                        inset: "0px auto auto 0px",
+                        margin: "10px 0px",
+                        top: "100%",
+                      }}
+                    >
+                      <ul
+                        className="p-3 space-y-3 text-sm text-gray-200"
+                        aria-labelledby="dropdownCheckboxButton"
+                      >
+                        {Object.keys(filter).map((missionType, i) => {
+                          return (
+                            <li key={missionType}>
+                              <div className="flex items-center p-2 rounded hover:bg-gray-600">
+                                <input
+                                  data-filter-name={missionType}
+                                  checked={filter[missionType]}
+                                  type="checkbox"
+                                  onChange={handleChangeFilter}
+                                  className="w-4 h-4 text-blue-600 rounded  focus:ring-blue-600 ring-offset-gray-700 focus:ring-2 bg-gray-600 border-gray-500 outline-none cursor-pointer"
+                                />
+                                <label
+                                  htmlFor={missionType}
+                                  className="ml-2 w-full text-sm font-medium text-gray-200"
+                                >
+                                  {missionType}
+                                </label>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  )}
+                </th>
                 <th>Building</th>
-                <th>City</th>
+                <th className="relative mb-4">
+                  <button
+                    id="dropdownButton2"
+                    data-dropdown-toggle="dropdownDefaultCheckbox"
+                    className="text-white text-sm px-4 py-2 selection:text-center inline-flex items-center bg-zinc-700 hover:bg-zinc-800"
+                    type="button"
+                    onClick={() => setShowdropdown2(!showdropdown2)}
+                  >
+                    City
+                  </button>
+
+                  {showdropdown2 && (
+                    <div
+                      id="dropdownMenu"
+                      className="z-50 h-96 overflow-y-auto w-52 rounded divide-y shadow bg-gray-700 divide-gray-600 block"
+                      data-popper-reference-hidden=""
+                      data-popper-escaped=""
+                      data-popper-placement="bottom"
+                      style={{
+                        position: "absolute",
+                        inset: "0px auto auto 0px",
+                        margin: "10px 0px",
+                        top: "100%",
+                      }}
+                    >
+                      <ul
+                        className="p-3 space-y-3 text-sm text-gray-200"
+                        aria-labelledby="dropdownCheckboxButton"
+                      >
+                        {Object.keys(cityFilter).map((cityType, i) => {
+                          return (
+                            <li key={cityType}>
+                              <div className="flex items-center p-2 rounded hover:bg-gray-600">
+                                <input
+                                  data-filter-name={cityType}
+                                  checked={filter[cityType]}
+                                  type="checkbox"
+                                  onChange={handleChangeCity}
+                                  className="w-4 h-4 text-blue-600 rounded  focus:ring-blue-600 ring-offset-gray-700 focus:ring-2 bg-gray-600 border-gray-500 outline-none cursor-pointer"
+                                />
+                                <label
+                                  htmlFor={cityType}
+                                  className="ml-2 w-full text-sm font-medium text-gray-200"
+                                >
+                                  {cityType}
+                                </label>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  )}
+                </th>
                 <th>(Col,Row)</th>
                 <th>Details</th>
                 <th className="rounded-tr-xl">Guide</th>
@@ -538,7 +727,7 @@ export default function Plot({ dbData, df2profiler }) {
                 WebkitTransform: `rotate(${e.angle}deg)`,
                 msTransform: `rotate(${e.angle}deg)`,
                 MozTransformStyle: `rotate(${e.angle}deg)`,
-                opacity:"70%",
+                opacity: "70%",
               }}
               className="routeLine pointer-events-none"
             ></div>
@@ -546,8 +735,10 @@ export default function Plot({ dbData, df2profiler }) {
         })}
       </div>
       <p className="text-white text-center font-bold mt-6">
-        Big thanks to DF2Profiler for all the mission data!<br />
-        You can use an extension called GoFullPage to take screenshots of the entire page if you want to share your guide with others!!
+        Big thanks to DF2Profiler for all the mission data!
+        <br />
+        You can use an extension called GoFullPage to take screenshots of the
+        entire page if you want to share your guide with others!!
       </p>
     </div>
   );
