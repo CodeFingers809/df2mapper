@@ -479,7 +479,7 @@ export default function Plot({ dbData, df2profiler }) {
           </tbody>
         </table>
         <div className="lg:-mt-5 flex justify-center flex-wrap lg:block flex-1">
-          <div className="mb-4">
+          <div className="mb-4 flex flex-wrap justify-center">
             <button
               className="text-white focus:ring-4 focus:outline-nonefont-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-green-600 hover:bg-green-700 focus:ring-green-800 mr-4"
               type="button"
@@ -518,6 +518,7 @@ export default function Plot({ dbData, df2profiler }) {
                 min={0}
                 max={50}
                 value={minLvl}
+                onClick={(e)=>e.target.select()}
                 onChange={(e) => {
                   let val = parseInt(e.target.value);
                   if (e.target.value.length===0 || val < 0 || val > 50) return;
@@ -532,6 +533,7 @@ export default function Plot({ dbData, df2profiler }) {
                 min={0}
                 max={50}
                 value={maxLvl}
+                onClick={(e)=>e.target.select()}
                 onChange={(e) => {
                   let val = parseInt(e.target.value);
                   if (e.target.value.length===0 || val < 0 || val > 50) return;
