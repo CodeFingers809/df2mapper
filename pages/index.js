@@ -503,14 +503,16 @@ export default function Plot({ dbData, df2profiler }) {
               className="text-white focus:ring-4 focus:outline-nonefont-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-violet-600 hover:bg-violet-700 focus:ring-violet-800 mr-4"
               type="button"
               onClick={() => {
-                setRouteArr(routeArr.slice(0,routeArr.length-1));
-                setRouteLines(routeLines.slice(0, routeLines.length-2));
+                setRouteArr(routeArr.slice(0, routeArr.length - 1));
+                setRouteLines(routeLines.slice(0, routeLines.length - 2));
               }}
             >
               Undo Route
             </button>
             <div className="mt-4">
-              <label htmlFor="minlvl" className="text-white">Min LvL</label>
+              <label htmlFor="minlvl" className="text-white">
+                Min LvL
+              </label>
               <input
                 type="number"
                 id="minlvl"
@@ -518,14 +520,17 @@ export default function Plot({ dbData, df2profiler }) {
                 min={0}
                 max={50}
                 value={minLvl}
-                onClick={(e)=>e.target.select()}
+                onClick={(e) => e.target.select()}
                 onChange={(e) => {
                   let val = parseInt(e.target.value);
-                  if (e.target.value.length===0 || val < 0 || val > 50) return;
+                  if (e.target.value.length === 0 || val < 0 || val > 50)
+                    return;
                   setMinLvl(parseInt(val));
                 }}
               />
-                <label htmlFor="maxlvl" className="text-white">Max LvL</label>
+              <label htmlFor="maxlvl" className="text-white">
+                Max LvL
+              </label>
               <input
                 type="number"
                 id="maxlvl"
@@ -533,10 +538,11 @@ export default function Plot({ dbData, df2profiler }) {
                 min={0}
                 max={50}
                 value={maxLvl}
-                onClick={(e)=>e.target.select()}
+                onClick={(e) => e.target.select()}
                 onChange={(e) => {
                   let val = parseInt(e.target.value);
-                  if (e.target.value.length===0 || val < 0 || val > 50) return;
+                  if (e.target.value.length === 0 || val < 0 || val > 50)
+                    return;
                   setMaxLvl(parseInt(val));
                 }}
               />
@@ -555,6 +561,20 @@ export default function Plot({ dbData, df2profiler }) {
                     onClick={() => setShowdropdown1(!showdropdown1)}
                   >
                     Type
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={4}
+                      stroke="currentColor"
+                      className="w-3 h-3"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                      />
+                    </svg>
                   </button>
 
                   {showdropdown1 && (
@@ -610,6 +630,20 @@ export default function Plot({ dbData, df2profiler }) {
                     onClick={() => setShowdropdown2(!showdropdown2)}
                   >
                     City
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={4}
+                      stroke="currentColor"
+                      className="w-3 h-3"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                      />
+                    </svg>
                   </button>
 
                   {showdropdown2 && (
@@ -655,7 +689,7 @@ export default function Plot({ dbData, df2profiler }) {
                     </div>
                   )}
                 </th>
-                <th>(Col,Row)</th>
+                <th>(Row, Col)</th>
                 <th>Details</th>
                 <th className="rounded-tr-xl">Guide</th>
               </tr>
@@ -691,8 +725,8 @@ export default function Plot({ dbData, df2profiler }) {
                     <td className="px-2">{o["Mission Building"]}</td>
                     <td className="px-2">{o["Mission City"]}</td>
                     <td className="px-2">
-                      ({foundDoc ? foundDoc.x : "-"},{" "}
-                      {foundDoc ? foundDoc.y : "-"})
+                      ({foundDoc ? foundDoc.y : "-"},{" "}
+                      {foundDoc ? foundDoc.x : "-"})
                     </td>
                     <td className="px-2">{o.Details}</td>
                     <td className="p-[3px_4px_0px_0px]">
