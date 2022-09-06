@@ -164,7 +164,7 @@ export default function Plot({ dbData, df2profiler }) {
                                   ? ","
                                   : ""
                               }` +
-                              "inset 0 0 0 7px #65a30d,inset 0 0 0 8px #000"
+                              "inset 0 0 0 7px rgb(132 204 22),inset 0 0 0 8px #000"
                             : ""
                         }${
                           policeDepts.find((o) => o.x === x && o.y === y)
@@ -258,7 +258,7 @@ export default function Plot({ dbData, df2profiler }) {
                                         : hospTypes.find((o) =>
                                             bldg.endsWith(o)
                                           )
-                                        ? "text-lime-600"
+                                        ? "text-lime-500"
                                         : bldg.endsWith("Police Department")
                                         ? "text-red-600"
                                         : bigTypes.find((o) => bldg.endsWith(o))
