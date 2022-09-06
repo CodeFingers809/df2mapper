@@ -125,7 +125,7 @@ export default function Plot({ dbData, df2profiler }) {
   //shopTypes.find(v=>o.bldgs[j].endsWith(v))
   return (
     <div className="min-h-screen p-9 w-full">
-      <table className='w-[850px] aspect-[5/3] bg-[url("https://df2profiler.com/gamemap/map_background.png")] bg-no-repeat bg-cover table-fixed'>
+      <table className='w-[960px] aspect-[5/3] bg-[url("https://df2profiler.com/gamemap/map_background.png")] bg-no-repeat bg-cover table-fixed'>
         <tbody>
           {/* generating rows */}
           {[...Array(18).keys()].map((o, i) => {
@@ -155,7 +155,7 @@ export default function Plot({ dbData, df2profiler }) {
                           : "transparent",
                         boxShadow: `${
                           shops.find((o) => o.x === x && o.y === y)
-                            ? "inset 0 0 0 2px #0284c7,inset 0 0 0 3px #000"
+                            ? "inset 0 0 0 4px #0284c7,inset 0 0 0 5px #000"
                             : ""
                         }${
                           hospitals.find((o) => o.x === x && o.y === y)
@@ -164,7 +164,7 @@ export default function Plot({ dbData, df2profiler }) {
                                   ? ","
                                   : ""
                               }` +
-                              "inset 0 0 0 5px #65a30d,inset 0 0 0 6px #000"
+                              "inset 0 0 0 7px #65a30d,inset 0 0 0 8px #000"
                             : ""
                         }${
                           policeDepts.find((o) => o.x === x && o.y === y)
@@ -174,7 +174,7 @@ export default function Plot({ dbData, df2profiler }) {
                                   ? ","
                                   : ""
                               }` +
-                              "inset 0 0 0 8px #dc2626,inset 0 0 0 9px #000"
+                              "inset 0 0 0 10px #dc2626,inset 0 0 0 11px #000"
                             : ""
                         }
                             ${
@@ -189,7 +189,7 @@ export default function Plot({ dbData, df2profiler }) {
                                     )
                                       ? ","
                                       : ""
-                                  }` + "inset 0 0 0 11px #f59e0b"
+                                  }` + "inset 0 0 0 13px #f59e0b"
                                 : ""
                             }
                           `,
