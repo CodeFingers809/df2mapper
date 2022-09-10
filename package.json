@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@heroicons/react": "^2.0.10",
     "axios": "^0.27.2",
     "flowbite": "^1.5.1",
     "flowbite-react": "^0.1.5",

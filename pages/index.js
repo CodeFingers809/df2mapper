@@ -3,6 +3,12 @@ import axios from "axios";
 import redBoxCoords from "../public/redBoxCoords.json";
 import greenBoxCoords from "../public/greenBoxCoords.json";
 import { JSDOM } from "jsdom";
+import {
+  ChevronDownIcon,
+  XCircleIcon,
+  TrashIcon,
+  ArrowUturnDownIcon,
+} from "@heroicons/react/24/outline";
 
 export default function Plot({ dbData, df2profiler }) {
   const [todaysMissions, setTodaysMissions] = useState([]);
@@ -102,7 +108,7 @@ export default function Plot({ dbData, df2profiler }) {
         //details of 3boss
         if (
           obj["Mission Type"] === "Kill Boss" &&
-          o.getAttribute("data-place") === "Open World"
+          o.getAttribute("data-building")===null
         ) {
           obj["Details"] = "Kill 3 Boss Zombie";
         }
@@ -114,7 +120,9 @@ export default function Plot({ dbData, df2profiler }) {
           obj["Details"] = "Escape 1 Stalker";
         }
         //details of ext
-        if (obj["Mission Type"] === "Exterminate") {
+        if (obj["Mission Type"] === "Exterminate" || (obj["Mission Type"] === "Kill Boss" &&
+        o.getAttribute("data-building")!==null)) {
+          obj["Mission Type"] = "Exterminate";
           obj["Details"] = "Clear building of all zombies";
         }
         //bs
@@ -332,7 +340,87 @@ export default function Plot({ dbData, df2profiler }) {
     }
   }, [minLvl, maxLvl]);
   return (
-    <div className="min-h-screen py-8 w-full">
+    <div className="min-h-screen w-full">
+      <nav className="w-full h-12 bg-gray-800 mb-8 p-2 flex flex-row items-center">
+        <img src="/favicon.ico" alt="logo" className="h-[32px] mr-2" />
+        <span className="text-white font-semibold font-staatliches leading-[32px] text-[32px] mr-4">
+          DF2Mapper
+        </span>
+
+        <button
+          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-gray-700 mr-2 relative z-10 group"
+          type="button"
+          onClick={() => {
+            setRouteArr([]);
+          }}
+        >
+          <XCircleIcon className="h-6" />
+          <div className="absolute hidden group-hover:block pointer-events-none bg-black/70 backdrop-blur top-[110%] rounded shadow-[4px_0px_20px_2px_#17171790] whitespace-nowrap z-10 px-2 py-1">
+            Break Route
+          </div>
+        </button>
+        <button
+          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-gray-700 mr-2 relative z-10 group"
+          type="button"
+          onClick={() => {
+            setRouteArr([]);
+            setRouteLines([]);
+          }}
+        >
+          <TrashIcon className="h-6" />
+          <div className="absolute hidden group-hover:block pointer-events-none bg-black/70 backdrop-blur top-[110%] rounded shadow-[4px_0px_20px_2px_#17171790] whitespace-nowrap z-10 px-2 py-1">
+            Clear Route Lines
+          </div>
+        </button>
+        <button
+          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-gray-700 mr-2 relative z-10 group"
+          type="button"
+          onClick={() => {
+            setRouteArr(routeArr.slice(0, routeArr.length - 1));
+            setRouteLines(routeLines.slice(0, routeLines.length - 2));
+          }}
+        >
+          <ArrowUturnDownIcon className="h-6" />
+          <div className="absolute hidden group-hover:block pointer-events-none bg-black/70 backdrop-blur top-[110%] rounded shadow-[4px_0px_20px_2px_#17171790] whitespace-nowrap z-10 px-2 py-1">
+            Undo Route
+          </div>
+        </button>
+        <label htmlFor="minlvl" className="text-white">
+          Min LvL
+        </label>
+        <input
+          type="number"
+          id="minlvl"
+          className="border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500 mr-4 w-10"
+          min={0}
+          max={50}
+          value={minLvl}
+          onClick={(e) => e.target.select()}
+          onChange={(e) => {
+            let val = parseInt(e.target.value);
+            if (e.target.value.length === 0 || val < 0 || val > 50) return;
+            setMinLvl(parseInt(val));
+          }}
+        />
+        <label htmlFor="maxlvl" className="text-white">
+          Max LvL
+        </label>
+        <input
+          type="number"
+          id="maxlvl"
+          className="border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500 mr-4 w-10"
+          min={0}
+          max={50}
+          value={maxLvl}
+          onClick={(e) => e.target.select()}
+          onChange={(e) => {
+            let val = parseInt(e.target.value);
+            if (e.target.value.length === 0 || val < 0 || val > 50) return;
+            setMaxLvl(parseInt(val));
+          }}
+        />
+      </nav>
+
       <div className="tableDiv ml-8 mt-2 mr-2 flex flex-wrap justify-center lg:flex-nowrap lg:items-start">
         <table className='mx-2 mr-4 mb-4 w-[350px] sm:w-[500px] md:w-[750px] aspect-[5/3] bg-[url("https://df2profiler.com/gamemap/map_background.png")] bg-no-repeat bg-cover table-fixed'>
           <tbody>
@@ -479,78 +567,9 @@ export default function Plot({ dbData, df2profiler }) {
           </tbody>
         </table>
         <div className="lg:-mt-5 flex justify-center flex-wrap lg:block flex-1">
-          <div className="mb-4 flex flex-wrap justify-center">
-            <button
-              className="text-white focus:ring-4 focus:outline-nonefont-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-green-600 hover:bg-green-700 focus:ring-green-800 mr-4"
-              type="button"
-              onClick={() => {
-                setRouteArr([]);
-              }}
-            >
-              Break Route
-            </button>
-            <button
-              className="text-white focus:ring-4 focus:outline-nonefont-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-red-600 hover:bg-red-700 focus:ring-red-800 mr-4"
-              type="button"
-              onClick={() => {
-                setRouteArr([]);
-                setRouteLines([]);
-              }}
-            >
-              Clear Route Lines
-            </button>
-            <button
-              className="text-white focus:ring-4 focus:outline-nonefont-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-violet-600 hover:bg-violet-700 focus:ring-violet-800 mr-4"
-              type="button"
-              onClick={() => {
-                setRouteArr(routeArr.slice(0, routeArr.length - 1));
-                setRouteLines(routeLines.slice(0, routeLines.length - 2));
-              }}
-            >
-              Undo Route
-            </button>
-            <div className="mt-4">
-              <label htmlFor="minlvl" className="text-white">
-                Min LvL
-              </label>
-              <input
-                type="number"
-                id="minlvl"
-                className="border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500 mr-4 w-10"
-                min={0}
-                max={50}
-                value={minLvl}
-                onClick={(e) => e.target.select()}
-                onChange={(e) => {
-                  let val = parseInt(e.target.value);
-                  if (e.target.value.length === 0 || val < 0 || val > 50)
-                    return;
-                  setMinLvl(parseInt(val));
-                }}
-              />
-              <label htmlFor="maxlvl" className="text-white">
-                Max LvL
-              </label>
-              <input
-                type="number"
-                id="maxlvl"
-                className="border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500 mr-4 w-10"
-                min={0}
-                max={50}
-                value={maxLvl}
-                onClick={(e) => e.target.select()}
-                onChange={(e) => {
-                  let val = parseInt(e.target.value);
-                  if (e.target.value.length === 0 || val < 0 || val > 50)
-                    return;
-                  setMaxLvl(parseInt(val));
-                }}
-              />
-            </div>
-          </div>
           <table className="w-full">
             <thead>
-              <tr className="text-white bg-zinc-700 border-b-2 border-zinc-500">
+              <tr className="text-white bg-zinc-700 border-b-2 border-zinc-500 text-sm">
                 <th className="rounded-tl-xl">Done</th>
                 <th className="relative mb-4 text-start">
                   <button
@@ -560,21 +579,8 @@ export default function Plot({ dbData, df2profiler }) {
                     type="button"
                     onClick={() => setShowdropdown1(!showdropdown1)}
                   >
-                    Type
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={4}
-                      stroke="currentColor"
-                      className="w-3 h-3"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                      />
-                    </svg>
+                    Type&nbsp;
+                    <ChevronDownIcon className="h-[12px] stroke-[3px]" />
                   </button>
 
                   {showdropdown1 && (
@@ -629,21 +635,8 @@ export default function Plot({ dbData, df2profiler }) {
                     type="button"
                     onClick={() => setShowdropdown2(!showdropdown2)}
                   >
-                    City
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={4}
-                      stroke="currentColor"
-                      className="w-3 h-3"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                      />
-                    </svg>
+                    City&nbsp;
+                    <ChevronDownIcon className="h-[12px] stroke-[3px]" />
                   </button>
 
                   {showdropdown2 && (
@@ -689,7 +682,7 @@ export default function Plot({ dbData, df2profiler }) {
                     </div>
                   )}
                 </th>
-                <th>(Row, Col)</th>
+                <th className="whitespace-nowrap">(Row, Col)</th>
                 <th>Details</th>
                 <th className="rounded-tr-xl">Guide</th>
               </tr>
@@ -771,6 +764,8 @@ export default function Plot({ dbData, df2profiler }) {
         })}
       </div>
       <p className="text-white text-center font-bold mt-6">
+        Map by DragonSoup9812
+        <br />
         Big thanks to DF2Profiler for all the mission data!
         <br />
         You can use an extension called GoFullPage to take screenshots of the
