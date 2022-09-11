@@ -8,13 +8,15 @@ import {
   XCircleIcon,
   TrashIcon,
   ArrowUturnDownIcon,
+  EyeIcon,
+  EyeSlashIcon,
 } from "@heroicons/react/24/outline";
 
 export default function Plot({ dbData, df2profiler }) {
   const [todaysMissions, setTodaysMissions] = useState([]);
 
   const [routeArr, setRouteArr] = useState([]);
-  const [drawRoute, setDrawRoute] = useState(true);
+  const [loaded, setLoaded] = useState(false);
   const [routeLines, setRouteLines] = useState([]);
 
   const getOffset = (el) => {
@@ -108,7 +110,7 @@ export default function Plot({ dbData, df2profiler }) {
         //details of 3boss
         if (
           obj["Mission Type"] === "Kill Boss" &&
-          o.getAttribute("data-building")===null
+          o.getAttribute("data-building") === null
         ) {
           obj["Details"] = "Kill 3 Boss Zombie";
         }
@@ -120,8 +122,11 @@ export default function Plot({ dbData, df2profiler }) {
           obj["Details"] = "Escape 1 Stalker";
         }
         //details of ext
-        if (obj["Mission Type"] === "Exterminate" || (obj["Mission Type"] === "Kill Boss" &&
-        o.getAttribute("data-building")!==null)) {
+        if (
+          obj["Mission Type"] === "Exterminate" ||
+          (obj["Mission Type"] === "Kill Boss" &&
+            o.getAttribute("data-building") !== null)
+        ) {
           obj["Mission Type"] = "Exterminate";
           obj["Details"] = "Clear building of all zombies";
         }
@@ -155,20 +160,10 @@ export default function Plot({ dbData, df2profiler }) {
 
         listOfObj.push(obj);
       });
-    // const tempLocs = [];
-    //       [...parser.parseFromString(``,"text/html").querySelectorAll("#map > tbody > tr > td")].forEach((td,i)=>{
-    //   const tempObj = {
-    //     x:td.getAttribute("data-xcoord"),
-    //     y:td.getAttribute("data-ycoord"),
-    //     city:td.getAttribute("data-district"),
-    //     level:td.getAttribute("data-level"),
-    //     bldgs:td.getAttribute("data-buildings")===""?[]:td.getAttribute("data-buildings").split(","),
-    //   }
-    //   tempLocs.push(tempObj)
-    // })
-    // console.log(JSON.stringify(tempLocs))
+
     setFilteredArr(listOfObj);
     setTodaysMissions(listOfObj);
+    setLoaded(true)
   }, []);
 
   //mission filter
@@ -207,6 +202,8 @@ export default function Plot({ dbData, df2profiler }) {
   //dropdown state
   const [showdropdown1, setShowdropdown1] = useState(false);
   const [showdropdown2, setShowdropdown2] = useState(false);
+  //grid lines state
+  const [showGridLines, setShowGridLines] = useState(true);
   //changing the filter
   const filterTheArr = () => {
     const filters = Object.keys(filter).filter((o) => filter[o]);
@@ -333,22 +330,35 @@ export default function Plot({ dbData, df2profiler }) {
       setRouteLines([...routeLines, connectLine(d1, d2, 2)]);
     }
   }, [routeArr]);
+  useEffect(()=>{
+    if(loaded) filterTheArr()
+  },[minLvl, maxLvl])
 
-  useEffect(() => {
-    if (minLvl && maxLvl) {
-      filterTheArr();
-    }
-  }, [minLvl, maxLvl]);
   return (
     <div className="min-h-screen w-full">
-      <nav className="w-full h-12 bg-gray-800 mb-8 p-2 flex flex-row items-center">
+      <nav className="w-full h-12 bg-zinc-800 mb-8 p-2 flex flex-row items-center">
         <img src="/favicon.ico" alt="logo" className="h-[32px] mr-2" />
         <span className="text-white font-semibold font-staatliches leading-[32px] text-[32px] mr-4">
           DF2Mapper
         </span>
 
         <button
-          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-gray-700 mr-2 relative z-10 group"
+          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-zinc-700 mr-2 relative z-10 group"
+          type="button"
+          onClick={() => {
+            setShowGridLines(!showGridLines)
+          }}
+        >
+          {
+            showGridLines ? <EyeSlashIcon className="h-6" /> : <EyeIcon className="h-6" />
+          }
+          <div className="absolute hidden group-hover:block pointer-events-none bg-black/70 backdrop-blur top-[110%] rounded shadow-[4px_0px_20px_2px_#17171790] whitespace-nowrap z-10 px-2 py-1">
+            Remove Grid Lines
+          </div>
+        </button>
+        <div className="w-[1px] h-[30px] bg-zinc-200 mr-2"></div>
+        <button
+          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-zinc-700 mr-2 relative z-10 group"
           type="button"
           onClick={() => {
             setRouteArr([]);
@@ -360,7 +370,7 @@ export default function Plot({ dbData, df2profiler }) {
           </div>
         </button>
         <button
-          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-gray-700 mr-2 relative z-10 group"
+          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-zinc-700 mr-2 relative z-10 group"
           type="button"
           onClick={() => {
             setRouteArr([]);
@@ -373,7 +383,7 @@ export default function Plot({ dbData, df2profiler }) {
           </div>
         </button>
         <button
-          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-gray-700 mr-2 relative z-10 group"
+          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-zinc-700 mr-2 relative z-10 group"
           type="button"
           onClick={() => {
             setRouteArr(routeArr.slice(0, routeArr.length - 1));
@@ -385,6 +395,7 @@ export default function Plot({ dbData, df2profiler }) {
             Undo Route
           </div>
         </button>
+        <div className="w-[1px] h-[30px] bg-zinc-200 mr-2"></div>
         <label htmlFor="minlvl" className="text-white">
           Min LvL
         </label>
@@ -399,7 +410,7 @@ export default function Plot({ dbData, df2profiler }) {
           onChange={(e) => {
             let val = parseInt(e.target.value);
             if (e.target.value.length === 0 || val < 0 || val > 50) return;
-            setMinLvl(parseInt(val));
+            setMinLvl(val);
           }}
         />
         <label htmlFor="maxlvl" className="text-white">
@@ -416,7 +427,8 @@ export default function Plot({ dbData, df2profiler }) {
           onChange={(e) => {
             let val = parseInt(e.target.value);
             if (e.target.value.length === 0 || val < 0 || val > 50) return;
-            setMaxLvl(parseInt(val));
+            setMaxLvl(val);
+            filterTheArr()
           }}
         />
       </nav>
@@ -444,10 +456,10 @@ export default function Plot({ dbData, df2profiler }) {
                         key={"tile" + index}
                         id={"tile" + x + "/" + y}
                         onClick={handleRouteClick}
-                        className={`border border-gray-700 hover:shadow-[inset_0_0_0_3px_#4b5563] relative group ${
-                          x % 6 === 0 && x !== 30 ? "border-r-gray-400" : ""
+                        className={`${showGridLines? "border border-gray-700/80":""} hover:shadow-[inset_0_0_0_3px_#4b5563] relative group ${
+                          x % 6 === 0 && x !== 30 && showGridLines ? "border-r-gray-400" : ""
                         } ${
-                          y % 6 === 0 && y !== 18
+                          y % 6 === 0 && y !== 18 && showGridLines
                             ? "border-b-gray-400"
                             : "selection:"
                         }`}
