@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @next/next/no-img-element */
 import { useEffect, useState } from "react";
 import axios from "axios";
 import redBoxCoords from "../public/redBoxCoords.json";
@@ -204,9 +206,24 @@ export default function Plot({ dbData, df2profiler }) {
   //dropdown state
   const [showdropdown1, setShowdropdown1] = useState(false);
   const [showdropdown2, setShowdropdown2] = useState(false);
-  const [showdropdown3, setShowdropdown3] = useState(false);
   //grid lines state
   const [showGridLines, setShowGridLines] = useState(true);
+  //sorting the array
+  const sortTheArr = () => {
+    if (sortBy === "city") {
+      setFilteredArr((c) =>
+        c.sort((a, b) => a["Mission City"].localeCompare(b["Mission City"]))
+      );
+    } else if (sortBy === "building") {
+      setFilteredArr((c) =>
+        c.sort((a, b) => a["Mission Building"].localeCompare(b["Mission Building"]))
+      );
+    } else if (sortBy === "type") {
+      setFilteredArr((c) =>
+        c.sort((a, b) => a["Mission Type"].localeCompare(b["Mission Type"]))
+      );
+    }
+  };
   //changing the filter
   const filterTheArr = () => {
     const filters = Object.keys(filter).filter((o) => filter[o]);
@@ -296,6 +313,7 @@ export default function Plot({ dbData, df2profiler }) {
         });
       }
     });
+    sortTheArr();
   };
   const handleChangeFilter = (e) => {
     setRouteArr([]);
@@ -336,15 +354,18 @@ export default function Plot({ dbData, df2profiler }) {
   useEffect(() => {
     if (loaded) filterTheArr();
   }, [minLvl, maxLvl]);
-
+  useEffect(() => {
+    sortTheArr();
+  }, [sortBy]);
   return (
     <div className="min-h-screen w-full">
       <nav className="w-full h-auto bg-zinc-800 mb-8 p-1 flex flex-row flex-nowrap whitespace-nowrap items-center">
         <div className="flex-shrink-0 flex flex-row">
-        <img src="/favicon.ico" alt="logo" className="h-[32px] mr-2" />
-        <span className="text-white font-semibold font-staatliches leading-[32px] text-[32px] mr-4">
-          DF2Mapper
-        </span></div>
+          <img src="/favicon.ico" alt="logo" className="h-[32px] mr-2" />
+          <span className="text-white font-semibold font-staatliches leading-[32px] text-[32px] mr-4">
+            DF2Mapper
+          </span>
+        </div>
 
         <button
           className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-zinc-700 mr-2 relative z-10 group flex-shrink-0"
@@ -441,11 +462,14 @@ export default function Plot({ dbData, df2profiler }) {
         <span className="text-white mr-1 flex-shrink-0">Sort By</span>
         <select
           className="border text-sm rounded-lg block w-24 p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500 flex-shrink-0"
+          onChange={(e) => {
+            setSortBy(e.target.value);
+          }}
+          defaultValue={"city"}
         >
-          <option>City</option>
-          <option>Type</option>
-          <option>Building</option>
-          <option>Difficulty</option>
+          <option value={"city"}>City</option>
+          <option value={"type"}>Type</option>
+          <option value={"building"}>Building</option>
         </select>
       </nav>
 
