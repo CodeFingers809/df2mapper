@@ -128,7 +128,7 @@ export default function Plot({ dbData, df2profiler }) {
       <table className='w-[960px] aspect-[5/3] bg-[url("https://df2profiler.com/gamemap/map_background.png")] bg-no-repeat bg-cover table-fixed'>
         <tbody>
           {/* generating rows */}
-          {[...Array(18).keys()].map((o, i) => {
+          {[...Array(18).keys()].map((c, i) => {
             return (
               <tr key={"row" + i}>
                 {/* generating cols */}
@@ -146,27 +146,43 @@ export default function Plot({ dbData, df2profiler }) {
                     <td
                       key={"tile" + index}
                       id={"tile" + x + "/" + y}
-                      className={`hover:shadow-[inset_0_0_0_3px_#4b5563] relative group `}
+                      className={`hover:shadow-[inset_0_0_0_3px_#4b5563] relative group border border-gray-700/70`}
                       style={{
                         backgroundColor: isRed
                           ? "#dc262670"
                           : isGreen
                           ? "#ffff0040"
                           : "transparent",
-                        boxShadow: `${
-                          shops.find((o) => o.x === x && o.y === y)
-                            ? "inset 0 0 0 4px #0284c7,inset 0 0 0 5px #000"
-                            : ""
-                        }${
-                          hospitals.find((o) => o.x === x && o.y === y)
-                            ? `${
-                                shops.find((o) => o.x === x && o.y === y)
-                                  ? ","
-                                  : ""
-                              }` +
-                              "inset 0 0 0 7px rgb(132 204 22),inset 0 0 0 8px #000"
-                            : ""
-                        }${
+                      }}
+                    >
+                      {/* adding col nums */}
+                      {x === 1 ? (
+                        <p className="absolute text-zinc-300 text-center -translate-x-full top-0 left-0 border border-gray-300 border-r-0 bg-zinc-700 w-full h-full box-content pointer-events-none text-[16px]">
+                          {i + 1}
+                        </p>
+                      ) : (
+                        ""
+                      )}
+                      {/* adding row nums */}
+                      {y === 1 ? (
+                        <p className="absolute text-zinc-300 text-center -translate-y-full top-0 left-0 border border-gray-300 border-b-0 bg-zinc-700 w-full box-content pointer-events-none text-[16px]">
+                          {index + 1}
+                        </p>
+                      ) : (
+                        ""
+                      )}
+                      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] border-[5px] border-transparent ${shops.find((o) => o.x === x && o.y === y  && cellData.level===50)
+                            ? "border-t-sky-600"
+                            : ""} ${hospitals.find((o) => o.x === x && o.y === y)
+                              ? "border-r-lime-500"
+                              : ""} ${bigBldgs.find((o) => o.x === x && o.y === y)
+                                ? "border-b-amber-500"
+                                : ""} ${cellData.bldgs.find((o)=>o.endsWith("Police Department"))
+                                  ? "border-l-red-600"
+                                  : ""}`}>
+                        
+                      </div>
+                        {/* ${
                           policeDepts.find((o) => o.x === x && o.y === y)
                             ? `${
                                 shops.find((o) => o.x === x && o.y === y) ||
@@ -193,25 +209,8 @@ export default function Plot({ dbData, df2profiler }) {
                                 : ""
                             }
                           `,
-                      }}
-                    >
-                      {/* adding col nums */}
-                      {x === 1 ? (
-                        <p className="absolute text-zinc-300 text-center -translate-x-full top-0 left-0 border border-gray-300 border-r-0 bg-zinc-700 w-full h-full box-content pointer-events-none text-[16px]">
-                          {i + 1}
-                        </p>
-                      ) : (
-                        ""
-                      )}
-                      {/* adding row nums */}
-                      {y === 1 ? (
-                        <p className="absolute text-zinc-300 text-center -translate-y-full top-0 left-0 border border-gray-300 border-b-0 bg-zinc-700 w-full box-content pointer-events-none text-[16px]">
-                          {index + 1}
-                        </p>
-                      ) : (
-                        ""
-                      )}
-
+                      }
+                        */}
                       {/* making popup */}
                       <div
                         className={`popup${
@@ -282,8 +281,10 @@ export default function Plot({ dbData, df2profiler }) {
           })}
         </tbody>
       </table>
+
       <p className="text-white text-center font-bold mt-6">
-        Big thanks to DF2Profiler for all the mission data!
+        Big thanks to DF2Profiler for all the mission data!<br/>
+        Map by DragonSoup9812
       </p>
     </div>
   );

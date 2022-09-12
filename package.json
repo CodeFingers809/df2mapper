@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@bradgarropy/next-google-analytics": "^1.0.2",
     "@heroicons/react": "^2.0.10",
     "axios": "^0.27.2",
     "flowbite": "^1.5.1",

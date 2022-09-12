@@ -163,7 +163,7 @@ export default function Plot({ dbData, df2profiler }) {
 
     setFilteredArr(listOfObj);
     setTodaysMissions(listOfObj);
-    setLoaded(true)
+    setLoaded(true);
   }, []);
 
   //mission filter
@@ -194,6 +194,8 @@ export default function Plot({ dbData, df2profiler }) {
     Archbrook: false,
     Wolfstable: false,
   });
+  const [sortBy, setSortBy] = useState("none");
+  //min max lvls
   const [minLvl, setMinLvl] = useState(0);
   const [maxLvl, setMaxLvl] = useState(50);
 
@@ -202,6 +204,7 @@ export default function Plot({ dbData, df2profiler }) {
   //dropdown state
   const [showdropdown1, setShowdropdown1] = useState(false);
   const [showdropdown2, setShowdropdown2] = useState(false);
+  const [showdropdown3, setShowdropdown3] = useState(false);
   //grid lines state
   const [showGridLines, setShowGridLines] = useState(true);
   //changing the filter
@@ -330,35 +333,38 @@ export default function Plot({ dbData, df2profiler }) {
       setRouteLines([...routeLines, connectLine(d1, d2, 2)]);
     }
   }, [routeArr]);
-  useEffect(()=>{
-    if(loaded) filterTheArr()
-  },[minLvl, maxLvl])
+  useEffect(() => {
+    if (loaded) filterTheArr();
+  }, [minLvl, maxLvl]);
 
   return (
     <div className="min-h-screen w-full">
-      <nav className="w-full h-12 bg-zinc-800 mb-8 p-2 flex flex-row items-center">
+      <nav className="w-full h-auto bg-zinc-800 mb-8 p-1 flex flex-row flex-nowrap whitespace-nowrap items-center">
+        <div className="flex-shrink-0 flex flex-row">
         <img src="/favicon.ico" alt="logo" className="h-[32px] mr-2" />
         <span className="text-white font-semibold font-staatliches leading-[32px] text-[32px] mr-4">
           DF2Mapper
-        </span>
+        </span></div>
 
         <button
-          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-zinc-700 mr-2 relative z-10 group"
+          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-zinc-700 mr-2 relative z-10 group flex-shrink-0"
           type="button"
           onClick={() => {
-            setShowGridLines(!showGridLines)
+            setShowGridLines(!showGridLines);
           }}
         >
-          {
-            showGridLines ? <EyeSlashIcon className="h-6" /> : <EyeIcon className="h-6" />
-          }
+          {showGridLines ? (
+            <EyeSlashIcon className="h-6" />
+          ) : (
+            <EyeIcon className="h-6" />
+          )}
           <div className="absolute hidden group-hover:block pointer-events-none bg-black/70 backdrop-blur top-[110%] rounded shadow-[4px_0px_20px_2px_#17171790] whitespace-nowrap z-10 px-2 py-1">
             Remove Grid Lines
           </div>
         </button>
-        <div className="w-[1px] h-[30px] bg-zinc-200 mr-2"></div>
+        <div className="w-[1px] h-[30px] bg-zinc-200 mr-2 flex-shrink-0"></div>
         <button
-          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-zinc-700 mr-2 relative z-10 group"
+          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-zinc-700 mr-2 relative z-10 group flex-shrink-0"
           type="button"
           onClick={() => {
             setRouteArr([]);
@@ -370,7 +376,7 @@ export default function Plot({ dbData, df2profiler }) {
           </div>
         </button>
         <button
-          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-zinc-700 mr-2 relative z-10 group"
+          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-zinc-700 mr-2 relative z-10 group flex-shrink-0"
           type="button"
           onClick={() => {
             setRouteArr([]);
@@ -383,7 +389,7 @@ export default function Plot({ dbData, df2profiler }) {
           </div>
         </button>
         <button
-          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-zinc-700 mr-2 relative z-10 group"
+          className="text-white h-[38px] w-[38px] focus:ring-4 focus:outline-none font-medium rounded-lg inline-flex justify-center items-center hover:bg-zinc-700 mr-2 relative z-10 group flex-shrink-0"
           type="button"
           onClick={() => {
             setRouteArr(routeArr.slice(0, routeArr.length - 1));
@@ -395,14 +401,14 @@ export default function Plot({ dbData, df2profiler }) {
             Undo Route
           </div>
         </button>
-        <div className="w-[1px] h-[30px] bg-zinc-200 mr-2"></div>
-        <label htmlFor="minlvl" className="text-white">
+        <div className="w-[1px] h-[30px] bg-zinc-200 mr-2 flex-shrink-0"></div>
+        <label htmlFor="minlvl" className="text-white mr-1 flex-shrink-0">
           Min LvL
         </label>
         <input
           type="number"
           id="minlvl"
-          className="border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500 mr-4 w-10"
+          className="border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500 mr-2 w-10 flex-shrink-0"
           min={0}
           max={50}
           value={minLvl}
@@ -413,13 +419,13 @@ export default function Plot({ dbData, df2profiler }) {
             setMinLvl(val);
           }}
         />
-        <label htmlFor="maxlvl" className="text-white">
+        <label htmlFor="maxlvl" className="text-white mr-1 flex-shrink-0">
           Max LvL
         </label>
         <input
           type="number"
           id="maxlvl"
-          className="border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500 mr-4 w-10"
+          className="border text-sm rounded-lg p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500 mr-2 w-10 flex-shrink-0"
           min={0}
           max={50}
           value={maxLvl}
@@ -428,9 +434,19 @@ export default function Plot({ dbData, df2profiler }) {
             let val = parseInt(e.target.value);
             if (e.target.value.length === 0 || val < 0 || val > 50) return;
             setMaxLvl(val);
-            filterTheArr()
+            filterTheArr();
           }}
         />
+        <div className="w-[1px] h-[30px] bg-zinc-200 mr-2 flex-shrink-0"></div>
+        <span className="text-white mr-1 flex-shrink-0">Sort By</span>
+        <select
+          className="border text-sm rounded-lg block w-24 p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500 flex-shrink-0"
+        >
+          <option>City</option>
+          <option>Type</option>
+          <option>Building</option>
+          <option>Difficulty</option>
+        </select>
       </nav>
 
       <div className="tableDiv ml-8 mt-2 mr-2 flex flex-wrap justify-center lg:flex-nowrap lg:items-start">
@@ -456,8 +472,12 @@ export default function Plot({ dbData, df2profiler }) {
                         key={"tile" + index}
                         id={"tile" + x + "/" + y}
                         onClick={handleRouteClick}
-                        className={`${showGridLines? "border border-gray-700/80":""} hover:shadow-[inset_0_0_0_3px_#4b5563] relative group ${
-                          x % 6 === 0 && x !== 30 && showGridLines ? "border-r-gray-400" : ""
+                        className={`${
+                          showGridLines ? "border border-gray-700/80" : ""
+                        } hover:shadow-[inset_0_0_0_3px_#4b5563] relative group ${
+                          x % 6 === 0 && x !== 30 && showGridLines
+                            ? "border-r-gray-400"
+                            : ""
                         } ${
                           y % 6 === 0 && y !== 18 && showGridLines
                             ? "border-b-gray-400"
@@ -654,7 +674,7 @@ export default function Plot({ dbData, df2profiler }) {
                   {showdropdown2 && (
                     <div
                       id="dropdownMenu"
-                      className="z-50 h-96 overflow-y-auto w-52 rounded divide-y shadow bg-gray-700 divide-gray-600 block"
+                      className="z-50 h-96 overflow-y-auto w-52 rounded divide-y shadow bg-gray-700 divide-gray-600 block text-start"
                       data-popper-reference-hidden=""
                       data-popper-escaped=""
                       data-popper-placement="bottom"
