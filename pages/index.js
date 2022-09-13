@@ -359,8 +359,8 @@ export default function Plot({ dbData, df2profiler }) {
     sortTheArr();
   }, [sortBy]);
   return (
-    <div className="min-h-screen w-full">
-      <nav className="w-full h-[50px] bg-zinc-800 mb-8 p-1 flex flex-row flex-nowrap whitespace-nowrap items-center overflow-x-auto overflow-y-visible">
+    <div className="min-h-screen w-full min-w-[860px]">
+      <nav className="w-full h-[50px] bg-zinc-800 mb-8 p-1 flex flex-row flex-nowrap whitespace-nowrap items-center">
         <div className="flex-shrink-0 flex flex-row">
           <img src="/favicon.ico" alt="logo" className="h-[32px] mr-2" />
           <span className="text-white font-semibold font-staatliches leading-[32px] text-[32px] mr-4">
@@ -476,7 +476,7 @@ export default function Plot({ dbData, df2profiler }) {
       </nav>
 
       <div className="tableDiv ml-8 mt-2 mr-2 flex flex-wrap justify-center lg:flex-nowrap lg:items-start">
-        <table className='mx-2 mr-4 mb-4 w-[350px] sm:w-[500px] md:w-[750px] aspect-[5/3] bg-[url("https://df2profiler.com/gamemap/map_background.png")] bg-no-repeat bg-cover table-fixed'>
+        <table className='mx-2 mr-4 mb-4 w-[750px] aspect-[5/3] bg-[url("https://df2profiler.com/gamemap/map_background.png")] bg-no-repeat bg-cover table-fixed'>
           <tbody>
             {/* generating rows */}
             {[...Array(18).keys()].map((o, i) => {
@@ -536,7 +536,7 @@ export default function Plot({ dbData, df2profiler }) {
                       >
                         {/* adding col nums */}
                         {x === 1 ? (
-                          <p className="absolute text-zinc-300 text-center -translate-x-full top-0 left-0 border border-gray-300 border-r-0 bg-zinc-700 w-full h-full box-content pointer-events-none sm:text-[10px] md:text-[16px] text-[5px]">
+                          <p className="absolute text-zinc-300 text-center -translate-x-full top-0 left-0 border border-gray-300 border-r-0 bg-zinc-700 w-full h-full box-content pointer-events-none md:text-[16px]">
                             {i + 1}
                           </p>
                         ) : (
@@ -544,7 +544,7 @@ export default function Plot({ dbData, df2profiler }) {
                         )}
                         {/* adding row nums */}
                         {y === 1 ? (
-                          <p className="absolute text-zinc-300 text-center -translate-y-full top-0 left-0 border border-gray-300 border-b-0 bg-zinc-700 w-full box-content pointer-events-none sm:text-[10px] md:text-[16px] text-[5px]">
+                          <p className="absolute text-zinc-300 text-center -translate-y-full top-0 left-0 border border-gray-300 border-b-0 bg-zinc-700 w-full box-content pointer-events-none md:text-[16px]">
                             {index + 1}
                           </p>
                         ) : (
