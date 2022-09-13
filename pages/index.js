@@ -360,7 +360,7 @@ export default function Plot({ dbData, df2profiler }) {
   }, [sortBy]);
   return (
     <div className="min-h-screen w-full">
-      <nav className="w-full h-auto bg-zinc-800 mb-8 p-1 flex flex-row flex-nowrap whitespace-nowrap items-center">
+      <nav className="w-full h-[50px] bg-zinc-800 mb-8 p-1 flex flex-row flex-nowrap whitespace-nowrap items-center overflow-x-auto overflow-y-visible">
         <div className="flex-shrink-0 flex flex-row">
           <img src="/favicon.ico" alt="logo" className="h-[32px] mr-2" />
           <span className="text-white font-semibold font-staatliches leading-[32px] text-[32px] mr-4">
@@ -499,8 +499,8 @@ export default function Plot({ dbData, df2profiler }) {
                         id={"tile" + x + "/" + y}
                         onClick={handleRouteClick}
                         className={`${
-                          showGridLines ? "border border-gray-700/80" : ""
-                        } hover:shadow-[inset_0_0_0_3px_#4b5563] relative group ${
+                          showGridLines ? "border" : "border-0"
+                        } ${cellData.bldgs.includes("Comer and Son Inc")?"border-red-600/80":"border-gray-700/80"} hover:shadow-[inset_0_0_0_3px_#4b5563] relative group ${
                           x % 6 === 0 && x !== 30 && showGridLines
                             ? "border-r-gray-400"
                             : ""
@@ -529,7 +529,7 @@ export default function Plot({ dbData, df2profiler }) {
                                 backgroundColor: isRed
                                   ? "#dc262670"
                                   : isGreen
-                                  ? "#ffff0040"
+                                  ? "#ffff0030"
                                   : "transparent",
                               }
                         }
