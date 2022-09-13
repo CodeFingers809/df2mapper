@@ -212,17 +212,18 @@ export default function Plot({ dbData, df2profiler }) {
   const sortTheArr = () => {
     if (sortBy === "city") {
       setFilteredArr((c) =>
-        c.sort((a, b) => a["Mission City"].localeCompare(b["Mission City"]))
+        [...c.sort((a, b) => a["Mission City"].localeCompare(b["Mission City"]))]
       );
     } else if (sortBy === "building") {
       setFilteredArr((c) =>
-        c.sort((a, b) => a["Mission Building"].localeCompare(b["Mission Building"]))
+        [...c.sort((a, b) => a["Mission Building"].localeCompare(b["Mission Building"]))]
       );
     } else if (sortBy === "type") {
       setFilteredArr((c) =>
-        c.sort((a, b) => a["Mission Type"].localeCompare(b["Mission Type"]))
+        [...c.sort((a, b) => a["Mission Type"].localeCompare(b["Mission Type"]))]
       );
     }
+    
   };
   //changing the filter
   const filterTheArr = () => {
@@ -465,8 +466,9 @@ export default function Plot({ dbData, df2profiler }) {
           onChange={(e) => {
             setSortBy(e.target.value);
           }}
-          defaultValue={"city"}
+          defaultValue={"none"}
         >
+          <option value={"none"} disabled selected>None</option>
           <option value={"city"}>City</option>
           <option value={"type"}>Type</option>
           <option value={"building"}>Building</option>
