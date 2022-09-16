@@ -335,7 +335,7 @@ export default function Home({ dbData, df2profiler, guides }) {
     });
   };
   //setting complete missions
-  const handleComplete = (e, id) => {
+  const handleComplete = (id) => {
     let temp = [...todaysMissions];
     temp[id - 1].complete = !temp[id - 1].complete;
     setTodaysMissions(temp);
