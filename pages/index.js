@@ -769,8 +769,8 @@ export default function Home({ dbData, df2profiler, guides }) {
                   >
                     <td className="text-center px-2">
                       <input
-                        onChange={(e) => {
-                          handleComplete(e, o.ID);
+                        onChange={() => {
+                          handleComplete(o.ID);
                         }}
                         checked={todaysMissions[o.ID - 1].complete}
                         type="checkbox"
