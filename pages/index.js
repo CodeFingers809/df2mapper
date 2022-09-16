@@ -13,47 +13,16 @@ import {
   EyeIcon,
   EyeSlashIcon,
 } from "@heroicons/react/24/outline";
+import absoluteUrl from "next-absolute-url";
+import connectLine from "../components/connectLine";
 
-export default function Plot({ dbData, df2profiler }) {
+export default function Home({ dbData, df2profiler, guides }) {
   const [todaysMissions, setTodaysMissions] = useState([]);
 
   const [routeArr, setRouteArr] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [routeLines, setRouteLines] = useState([]);
 
-  const getOffset = (el) => {
-    const rect = el.getBoundingClientRect();
-    return {
-      left: rect.left + window.pageXOffset,
-      top: rect.top + window.pageYOffset,
-      width: rect.width || el.offsetWidth,
-      height: rect.height || el.offsetHeight,
-    };
-  };
-
-  const connectLine = (div1, div2, thickness) => {
-    const off1 = getOffset(div1);
-    const off2 = getOffset(div2);
-
-    const x1 = off1.left + off1.width / 2;
-    const y1 = off1.top + off1.height / 2;
-
-    const x2 = off2.left + off2.width / 2;
-    const y2 = off2.top + off2.height / 2;
-
-    const length = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-
-    const cx = (x1 + x2) / 2 - length / 2;
-    const cy = (y1 + y2) / 2 - thickness / 2;
-
-    const angle = Math.atan2(y1 - y2, x1 - x2) * (180 / Math.PI);
-    return {
-      left: cx,
-      top: cy,
-      length,
-      angle,
-    };
-  };
   useEffect(() => {
     const parser = new DOMParser();
     const profilerDoc = parser.parseFromString(df2profiler, "text/html");
@@ -68,7 +37,7 @@ export default function Plot({ dbData, df2profiler }) {
           Details: "-",
           complete: false,
           ID: index + 1,
-          guide: "Add Guide",
+          guide: "",
         };
         //deatils in find item
         if (
@@ -163,6 +132,24 @@ export default function Plot({ dbData, df2profiler }) {
         listOfObj.push(obj);
       });
 
+    guides.forEach((v) => {
+      if (
+        listOfObj.find(
+          (o) =>
+            o["Mission Building"] === v["Mission Building"] &&
+            o["Mission City"] === v["Mission City"] &&
+            o["Mission Type"] === v["Mission Type"]
+        )
+      ) {
+        listOfObj.find(
+          (o) =>
+            o["Mission Building"] === v["Mission Building"] &&
+            o["Mission City"] === v["Mission City"] &&
+            o["Mission Type"] === v["Mission Type"]
+        ).guide = v.guide;
+      }
+    });
+
     setFilteredArr(listOfObj);
     setTodaysMissions(listOfObj);
     setLoaded(true);
@@ -211,19 +198,20 @@ export default function Plot({ dbData, df2profiler }) {
   //sorting the array
   const sortTheArr = () => {
     if (sortBy === "city") {
-      setFilteredArr((c) =>
-        [...c.sort((a, b) => a["Mission City"].localeCompare(b["Mission City"]))]
-      );
+      setFilteredArr((c) => [
+        ...c.sort((a, b) => a["Mission City"].localeCompare(b["Mission City"])),
+      ]);
     } else if (sortBy === "building") {
-      setFilteredArr((c) =>
-        [...c.sort((a, b) => a["Mission Building"].localeCompare(b["Mission Building"]))]
-      );
+      setFilteredArr((c) => [
+        ...c.sort((a, b) =>
+          a["Mission Building"].localeCompare(b["Mission Building"])
+        ),
+      ]);
     } else if (sortBy === "type") {
-      setFilteredArr((c) =>
-        [...c.sort((a, b) => a["Mission Type"].localeCompare(b["Mission Type"]))]
-      );
+      setFilteredArr((c) => [
+        ...c.sort((a, b) => a["Mission Type"].localeCompare(b["Mission Type"])),
+      ]);
     }
-    
   };
   //changing the filter
   const filterTheArr = () => {
@@ -316,6 +304,7 @@ export default function Plot({ dbData, df2profiler }) {
     });
     sortTheArr();
   };
+
   const handleChangeFilter = (e) => {
     setRouteArr([]);
     setRouteLines([]);
@@ -331,6 +320,19 @@ export default function Plot({ dbData, df2profiler }) {
     changedFilter[e.target.getAttribute("data-filter-name")] = e.target.checked;
     setCityFilter(changedFilter);
     filterTheArr();
+  };
+  const handleChangeGuide = async (e, o) => {
+    setTodaysMissions((c) => {
+      let temp = [...c];
+      temp[o.ID - 1].guide = e.target.value;
+      return temp;
+    });
+    await axios.post(`/api/guide`, {
+      "Mission Building": o["Mission Building"],
+      "Mission City": o["Mission City"],
+      "Mission Type": o["Mission Type"],
+      guide: e.target.value,
+    });
   };
   //setting complete missions
   const handleComplete = (e, id) => {
@@ -468,7 +470,9 @@ export default function Plot({ dbData, df2profiler }) {
           }}
           defaultValue={"none"}
         >
-          <option value={"none"} disabled selected>None</option>
+          <option value={"none"} disabled selected>
+            None
+          </option>
           <option value={"city"}>City</option>
           <option value={"type"}>Type</option>
           <option value={"building"}>Building</option>
@@ -498,9 +502,11 @@ export default function Plot({ dbData, df2profiler }) {
                         key={"tile" + index}
                         id={"tile" + x + "/" + y}
                         onClick={handleRouteClick}
-                        className={`${
-                          showGridLines ? "border" : "border-0"
-                        } ${cellData.bldgs.includes("Comer and Son Inc")?"border-red-600/80":"border-gray-700/80"} hover:shadow-[inset_0_0_0_3px_#4b5563] relative group ${
+                        className={`${showGridLines ? "border" : "border-0"} ${
+                          cellData.bldgs.includes("Comer and Son Inc")
+                            ? "border-red-600/80"
+                            : "border-gray-700/80"
+                        } hover:shadow-[inset_0_0_0_3px_#4b5563] relative group ${
                           x % 6 === 0 && x !== 30 && showGridLines
                             ? "border-r-gray-400"
                             : ""
@@ -624,7 +630,7 @@ export default function Plot({ dbData, df2profiler }) {
             })}
           </tbody>
         </table>
-        <div className="lg:-mt-5 flex justify-center flex-wrap lg:block flex-1">
+        <div className="lg:-mt-5 flex-wrap lg:block flex-1">
           <table className="w-full">
             <thead>
               <tr className="text-white bg-zinc-700 border-b-2 border-zinc-500 text-sm">
@@ -633,7 +639,7 @@ export default function Plot({ dbData, df2profiler }) {
                   <button
                     id="dropdownButton"
                     data-dropdown-toggle="dropdownDefaultCheckbox"
-                    className="text-white text-sm px-4 py-2 selection:text-center inline-flex items-center bg-zinc-700 hover:bg-zinc-800"
+                    className="text-white text-sm px-4 py-2 selection:text-center inline-flex items-center hover:bg-zinc-800"
                     type="button"
                     onClick={() => setShowdropdown1(!showdropdown1)}
                   >
@@ -785,7 +791,24 @@ export default function Plot({ dbData, df2profiler }) {
                         cols="10"
                         rows="2"
                         placeholder="Add Guide"
-                        className="outline-none border-none bg-zinc-700 text-[10px] leading-[10px] xl:text-xs xl:leading-3 font-semibold text-zinc-200 p-0 xl:p-1 m-0 rounded "
+                        className="outline-none border-none bg-zinc-700 text-[10px] leading-[10px] xl:text-xs xl:leading-3 font-semibold text-zinc-200 p-0 xl:p-1 m-0 rounded"
+                        value={
+                          todaysMissions.find(
+                            (v) =>
+                              v["Mission Building"] === o["Mission Building"] &&
+                              v["Mission City"] === o["Mission City"] &&
+                              v["Mission Type"] === o["Mission Type"]
+                          )
+                            ? todaysMissions.find(
+                                (v) =>
+                                  v["Mission Building"] ===
+                                    o["Mission Building"] &&
+                                  v["Mission City"] === o["Mission City"] &&
+                                  v["Mission Type"] === o["Mission Type"]
+                              ).guide
+                            : ""
+                        }
+                        onChange={(e) => handleChangeGuide(e, o)}
                       ></textarea>
                     </td>
                   </tr>
@@ -833,12 +856,14 @@ export default function Plot({ dbData, df2profiler }) {
   );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps({ req }) {
   try {
     const df2profiler = await axios({
       method: "GET",
       url: "https://df2profiler.com/gamemap/",
     });
+    const { origin } = absoluteUrl(req);
+    const guides = await axios.get(origin + "/api/guide");
     const { document } = new JSDOM(df2profiler.data).window;
     return {
       props: {
@@ -868,6 +893,7 @@ export async function getServerSideProps() {
             };
           }
         ),
+        guides: guides.data,
       },
     };
   } catch (err) {
