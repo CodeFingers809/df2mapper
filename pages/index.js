@@ -362,7 +362,7 @@ export default function Home({ dbData, df2profiler, guides }) {
   }, [sortBy]);
   return (
     <div className="min-h-screen w-full min-w-[860px]">
-      <nav className="w-full h-[50px] bg-zinc-800 mb-8 p-1 flex flex-row flex-nowrap whitespace-nowrap items-center">
+      <nav className="w-full h-[50px] bg-zinc-800 p-1 flex flex-row flex-nowrap whitespace-nowrap items-center">
         <div className="flex-shrink-0 flex flex-row">
           <img src="/favicon.ico" alt="logo" className="h-[32px] mr-2" />
           <span className="text-white font-semibold font-staatliches leading-[32px] text-[32px] mr-4">
@@ -478,6 +478,17 @@ export default function Home({ dbData, df2profiler, guides }) {
           <option value={"building"}>Building</option>
         </select>
       </nav>
+
+      <div className="mb-8 text-center text-white">
+        If you want more things added to this site,{" "}
+        <a
+          href="https://www.buymeacoffee.com/ayushbohra"
+          className="text-blue-600 underline"
+        >
+          Buy me a coffee
+        </a>{" "}
+        to keep me awake while working on it!😉
+      </div>
 
       <div className="tableDiv ml-8 mt-2 mr-2 flex flex-wrap justify-center lg:flex-nowrap lg:items-start">
         <table className='mx-2 mr-4 mb-4 w-[750px] aspect-[5/3] bg-[url("https://df2profiler.com/gamemap/map_background.png")] bg-no-repeat bg-cover table-fixed'>
@@ -844,13 +855,10 @@ export default function Home({ dbData, df2profiler, guides }) {
           );
         })}
       </div>
-      <p className="text-white text-center font-bold mt-6">
+      <p className="text-white text-center font-bold mt-6 pb-4">
         Map by DragonSoup9812
         <br />
         Big thanks to DF2Profiler for all the mission data!
-        <br />
-        You can use an extension called GoFullPage to take screenshots of the
-        entire page if you want to share your guide with others!!
       </p>
     </div>
   );
