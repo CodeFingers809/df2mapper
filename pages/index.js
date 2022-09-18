@@ -738,7 +738,7 @@ export default function Home({ dbData, df2profiler, guides }) {
                               <div className="flex items-center p-2 rounded hover:bg-gray-600">
                                 <input
                                   data-filter-name={cityType}
-                                  checked={filter[cityType]}
+                                  checked={cityFilter[cityType]}
                                   type="checkbox"
                                   onChange={handleChangeCity}
                                   className="w-4 h-4 text-blue-600 rounded  focus:ring-blue-600 ring-offset-gray-700 focus:ring-2 bg-gray-600 border-gray-500 outline-none cursor-pointer"
