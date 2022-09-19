@@ -90,7 +90,7 @@ export default function Home({ dbData, df2profiler, guides }) {
           obj["Mission Type"] === "Escape Stalker" &&
           o.getAttribute("data-place") === "Open World"
         ) {
-          obj["Details"] = "Escape 1 Stalker";
+          obj["Details"] = o.innerText.substring(14,o.innerText.indexOf("(")-1);
         }
         //details of ext
         if (
