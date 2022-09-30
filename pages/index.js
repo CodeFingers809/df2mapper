@@ -302,7 +302,6 @@ export default function Home({ dbData, df2profiler, guides }) {
         });
       }
     });
-    sortTheArr();
   };
 
   const handleChangeFilter = (e) => {
@@ -804,20 +803,7 @@ export default function Home({ dbData, df2profiler, guides }) {
                         placeholder="Add Guide"
                         className="outline-none border-none bg-zinc-700 text-[10px] leading-[10px] xl:text-xs xl:leading-3 font-semibold text-zinc-200 p-0 xl:p-1 m-0 rounded"
                         value={
-                          todaysMissions.find(
-                            (v) =>
-                              v["Mission Building"] === o["Mission Building"] &&
-                              v["Mission City"] === o["Mission City"] &&
-                              v["Mission Type"] === o["Mission Type"]
-                          )
-                            ? todaysMissions.find(
-                                (v) =>
-                                  v["Mission Building"] ===
-                                    o["Mission Building"] &&
-                                  v["Mission City"] === o["Mission City"] &&
-                                  v["Mission Type"] === o["Mission Type"]
-                              ).guide
-                            : ""
+                          todaysMissions[o.ID-1].guide
                         }
                         onChange={(e) => handleChangeGuide(e, o)}
                       ></textarea>
