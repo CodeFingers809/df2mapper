@@ -336,9 +336,8 @@ export default function Home({ dbData, df2profiler, guides }) {
   //setting complete missions
   const handleComplete = (id) => {
     let temp = [...todaysMissions];
-    temp[id - 1].complete = !temp[id - 1].complete;
+    temp[id].complete = !temp[id].complete;
     setTodaysMissions(temp);
-    filterTheArr();
   };
   //drawing route lines
   const handleRouteClick = (e) => {
@@ -772,7 +771,7 @@ export default function Home({ dbData, df2profiler, guides }) {
                   <tr
                     key={"mission" + o.ID}
                     className={`text-[10px] xl:text-xs 2xl:text-sm border-b border-zinc-700 ${
-                      o.complete
+                      todaysMissions[o.ID-1].complete
                         ? "text-zinc-500 bg-zinc-700"
                         : "text-zinc-300 bg-zinc-800"
                     }`}
@@ -780,7 +779,7 @@ export default function Home({ dbData, df2profiler, guides }) {
                     <td className="text-center px-2">
                       <input
                         onChange={() => {
-                          handleComplete(o.ID);
+                          handleComplete(o.ID-1);
                         }}
                         checked={todaysMissions[o.ID - 1].complete}
                         type="checkbox"
