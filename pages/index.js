@@ -336,7 +336,7 @@ export default function Home({ dbData, df2profiler, guides }) {
   //setting complete missions
   const handleComplete = (id) => {
     let temp = [...todaysMissions];
-    temp[id].complete = !temp[id].complete;
+    temp.find(v=>v.ID===id).complete = !temp.find(v=>v.ID===id).complete;
     setTodaysMissions(temp);
   };
   //drawing route lines
@@ -771,7 +771,7 @@ export default function Home({ dbData, df2profiler, guides }) {
                   <tr
                     key={"mission" + o.ID}
                     className={`text-[10px] xl:text-xs 2xl:text-sm border-b border-zinc-700 ${
-                      todaysMissions[o.ID-1].complete
+                      todaysMissions.find(v=>v.ID===o.ID).complete
                         ? "text-zinc-500 bg-zinc-700"
                         : "text-zinc-300 bg-zinc-800"
                     }`}
@@ -779,9 +779,9 @@ export default function Home({ dbData, df2profiler, guides }) {
                     <td className="text-center px-2">
                       <input
                         onChange={() => {
-                          handleComplete(o.ID-1);
+                          handleComplete(o.ID);
                         }}
-                        checked={todaysMissions[o.ID - 1].complete}
+                        checked={todaysMissions.find(v=>v.ID===o.ID).complete}
                         type="checkbox"
                         value={o.ID}
                         className="w-3 xl:w-4 h-3 xl:h-4 text-blue-600 rounded focus:ring-blue-600 ring-offset-gray-800 focus:ring-2 bg-gray-700 border-gray-600 cursor-pointer"
@@ -802,7 +802,7 @@ export default function Home({ dbData, df2profiler, guides }) {
                         placeholder="Add Guide"
                         className="outline-none border-none bg-zinc-700 text-[10px] leading-[10px] xl:text-xs xl:leading-3 font-semibold text-zinc-200 p-0 xl:p-1 m-0 rounded"
                         value={
-                          todaysMissions[o.ID-1].guide
+                          todaysMissions.find(v=>v.ID===o.ID).guide
                         }
                         onChange={(e) => handleChangeGuide(e, o)}
                       ></textarea>
