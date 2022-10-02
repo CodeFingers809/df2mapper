@@ -90,7 +90,10 @@ export default function Home({ dbData, df2profiler, guides }) {
           obj["Mission Type"] === "Escape Stalker" &&
           o.getAttribute("data-place") === "Open World"
         ) {
-          obj["Details"] = o.innerText.substring(14,o.innerText.indexOf("(")-1);
+          obj["Details"] = o.innerText.substring(
+            14,
+            o.innerText.indexOf("(") - 1
+          );
         }
         //details of ext
         if (
@@ -336,7 +339,8 @@ export default function Home({ dbData, df2profiler, guides }) {
   //setting complete missions
   const handleComplete = (id) => {
     let temp = [...todaysMissions];
-    temp.find(v=>v.ID===id).complete = !temp.find(v=>v.ID===id).complete;
+    temp.find((v) => v.ID === id).complete = !temp.find((v) => v.ID === id)
+      .complete;
     setTodaysMissions(temp);
   };
   //drawing route lines
@@ -771,7 +775,7 @@ export default function Home({ dbData, df2profiler, guides }) {
                   <tr
                     key={"mission" + o.ID}
                     className={`text-[10px] xl:text-xs 2xl:text-sm border-b border-zinc-700 ${
-                      todaysMissions.find(v=>v.ID===o.ID).complete
+                      todaysMissions.find((v) => v.ID === o.ID).complete
                         ? "text-zinc-500 bg-zinc-700"
                         : "text-zinc-300 bg-zinc-800"
                     }`}
@@ -781,9 +785,10 @@ export default function Home({ dbData, df2profiler, guides }) {
                         onChange={() => {
                           handleComplete(o.ID);
                         }}
-                        checked={todaysMissions.find(v=>v.ID===o.ID).complete}
+                        checked={
+                          todaysMissions.find((v) => v.ID === o.ID).complete
+                        }
                         type="checkbox"
-                        value={o.ID}
                         className="w-3 xl:w-4 h-3 xl:h-4 text-blue-600 rounded focus:ring-blue-600 ring-offset-gray-800 focus:ring-2 bg-gray-700 border-gray-600 cursor-pointer"
                       />
                     </td>
@@ -801,9 +806,7 @@ export default function Home({ dbData, df2profiler, guides }) {
                         rows="2"
                         placeholder="Add Guide"
                         className="outline-none border-none bg-zinc-700 text-[10px] leading-[10px] xl:text-xs xl:leading-3 font-semibold text-zinc-200 p-0 xl:p-1 m-0 rounded"
-                        value={
-                          todaysMissions.find(v=>v.ID===o.ID).guide
-                        }
+                        value={todaysMissions.find((v) => v.ID === o.ID).guide}
                         onChange={(e) => handleChangeGuide(e, o)}
                       ></textarea>
                     </td>
