@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/inline-script-id */
 import "../styles/globals.css";
 import Head from "next/head";
-import Script from "next/script";
 import GoogleAnalytics from "@bradgarropy/next-google-analytics";
 
 function MyApp({ Component, pageProps }) {

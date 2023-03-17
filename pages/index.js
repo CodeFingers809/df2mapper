@@ -16,7 +16,7 @@ import {
 import absoluteUrl from "next-absolute-url";
 import connectLine from "../components/connectLine";
 
-export default function Home({ dbData, df2profiler, guides }) {
+export default function Home({ dbData, df2profiler }) {
   const [todaysMissions, setTodaysMissions] = useState([]);
 
   const [routeArr, setRouteArr] = useState([]);
@@ -27,10 +27,18 @@ export default function Home({ dbData, df2profiler, guides }) {
     const parser = new DOMParser();
     const profilerDoc = parser.parseFromString(df2profiler, "text/html");
     let listOfObj = [];
-    [...profilerDoc.querySelectorAll("#missions > span")]
-      .filter((e) => {
-        return !e.innerHTML.includes("(Outpost Leader)");
-      })
+    // console.log([...profilerDoc.querySelector("#sortedValue").nextElementSibling.querySelectorAll("span")]
+    // .filter((e) => {
+    //   return !e.innerHTML.includes("(Outpost Leader)")
+    // }).filter((e) => {
+    //   return !e.classList.contains("giverLookup");
+    // }));
+    [...profilerDoc.querySelector("#sortedValue").nextElementSibling.querySelectorAll("span")]
+    .filter((e) => {
+      return !e.innerHTML.includes("(Outpost Leader)")
+    }).filter((e) => {
+      return !e.classList.contains("giverLookup");
+    })
       .forEach((o, index) => {
         let obj = {
           "Mission Type": o.querySelector("strong").innerText,
@@ -117,16 +125,8 @@ export default function Home({ dbData, df2profiler, guides }) {
         }
         //open world mission
         if (o.getAttribute("data-place").trim() === "Open World") {
-          obj["Mission Building"] = o.innerHTML
-            .split("(")[1]
-            .split(")")[0]
-            .split(",")[0]
-            .trim();
-          obj["Mission City"] = o.innerHTML
-            .split("(")[1]
-            .split(")")[0]
-            .split(",")[1]
-            .trim();
+          obj["Mission Building"] = o.querySelector("span").getAttribute("data-building");
+          obj["Mission City"] = o.querySelector("span").getAttribute("data-giverDistrict");
         } else {
           obj["Mission Building"] = o.getAttribute("data-place").split(", ")[0];
           obj["Mission City"] = o.getAttribute("data-place").split(", ")[1];
@@ -135,23 +135,23 @@ export default function Home({ dbData, df2profiler, guides }) {
         listOfObj.push(obj);
       });
 
-    guides.forEach((v) => {
-      if (
-        listOfObj.find(
-          (o) =>
-            o["Mission Building"] === v["Mission Building"] &&
-            o["Mission City"] === v["Mission City"] &&
-            o["Mission Type"] === v["Mission Type"]
-        )
-      ) {
-        listOfObj.find(
-          (o) =>
-            o["Mission Building"] === v["Mission Building"] &&
-            o["Mission City"] === v["Mission City"] &&
-            o["Mission Type"] === v["Mission Type"]
-        ).guide = v.guide;
-      }
-    });
+    // guides.forEach((v) => {
+    //   if (
+    //     listOfObj.find(
+    //       (o) =>
+    //         o["Mission Building"] === v["Mission Building"] &&
+    //         o["Mission City"] === v["Mission City"] &&
+    //         o["Mission Type"] === v["Mission Type"]
+    //     )
+    //   ) {
+    //     listOfObj.find(
+    //       (o) =>
+    //         o["Mission Building"] === v["Mission Building"] &&
+    //         o["Mission City"] === v["Mission City"] &&
+    //         o["Mission Type"] === v["Mission Type"]
+    //     ).guide = v.guide;
+    //   }
+    // });
 
     setFilteredArr(listOfObj);
     setTodaysMissions(listOfObj);
@@ -761,7 +761,6 @@ export default function Home({ dbData, df2profiler, guides }) {
                 </th>
                 <th className="whitespace-nowrap">(Row, Col)</th>
                 <th>Details</th>
-                <th className="rounded-tr-xl">Guide</th>
               </tr>
             </thead>
             <tbody>
@@ -800,7 +799,7 @@ export default function Home({ dbData, df2profiler, guides }) {
                       {foundDoc ? foundDoc.x : "-"})
                     </td>
                     <td className="px-2">{o.Details}</td>
-                    <td className="p-[3px_4px_0px_0px]">
+                    {/* <td className="p-[3px_4px_0px_0px]">
                       <textarea
                         cols="10"
                         rows="2"
@@ -809,7 +808,7 @@ export default function Home({ dbData, df2profiler, guides }) {
                         value={todaysMissions.find((v) => v.ID === o.ID).guide}
                         onChange={(e) => handleChangeGuide(e, o)}
                       ></textarea>
-                    </td>
+                    </td> */}
                   </tr>
                 );
               })}
@@ -859,7 +858,7 @@ export async function getServerSideProps({ req }) {
       url: "https://df2profiler.com/gamemap/",
     });
     const { origin } = absoluteUrl(req);
-    const guides = await axios.get(origin + "/api/guide");
+    // const guides = await axios.get(origin + "/api/guide");
     const { document } = new JSDOM(df2profiler.data).window;
     return {
       props: {
@@ -872,7 +871,9 @@ export async function getServerSideProps({ req }) {
               bldgs:
                 o.getAttribute("data-buildings") === ""
                   ? []
-                  : o.getAttribute("data-buildings").split(","),
+                  : o.getAttribute("data-buildings").split(",").map(bldg=>{
+                    return bldg.split("(")[0].trim()
+                  }),
               level: parseInt(o.getAttribute("data-level")),
               city:
                 o.getAttribute("data-district") === "RavenwallHeights"
@@ -889,7 +890,7 @@ export async function getServerSideProps({ req }) {
             };
           }
         ),
-        guides: guides.data,
+        // guides: guides.data,
       },
     };
   } catch (err) {
